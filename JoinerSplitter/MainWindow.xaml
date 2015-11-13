@@ -26,21 +26,22 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="53*"/>
+            <RowDefinition Height="9*"/>
             <RowDefinition Height="33"/>
-            <RowDefinition Height="41*"/>
+            <RowDefinition Height="7*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" MinHeight="27"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="125"/>
+            <ColumnDefinition Width="125"/>
         </Grid.ColumnDefinitions>
-        <GridSplitter x:Name="mainSplitter" HorizontalAlignment="Stretch" Grid.Column="1" Grid.RowSpan="7" Width="7"  Style="{DynamicResource GridSplitterStyleVertical}"/>
-        <Label x:Name="inputLabel" Content="Input" Grid.Column="2" HorizontalAlignment="Stretch" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
-        <Button x:Name="addButton" Content="Add" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="1" Click="addButton_Click"/>
-        <ListView x:Name="inputList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="2" ItemsSource="{Binding CurrentJob.InputFiles}" d:DataContext="{d:DesignInstance local:VideoFile}" SelectionMode="Single" SelectionChanged="inputList_SelectionChanged">
+        <GridSplitter x:Name="mainSplitter" HorizontalAlignment="Stretch" Grid.Column="1" Grid.RowSpan="7"  Style="{DynamicResource GridSplitterStyleVertical}"/>
+        <Label x:Name="inputLabel" Content="Input" Grid.Column="2" HorizontalAlignment="Stretch" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Grid.ColumnSpan="2" />
+        <Button x:Name="addButton" Content="Add" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="1" Click="addButton_Click" Grid.ColumnSpan="2"/>
+        <ListView x:Name="inputList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="2" ItemsSource="{Binding CurrentJob.InputFiles}" d:DataContext="{d:DesignInstance local:VideoFile}" SelectionMode="Single" SelectionChanged="inputList_SelectionChanged" Grid.ColumnSpan="2" Grid.RowSpan="1">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="File Name" DisplayMemberBinding="{Binding FileName}"/>
@@ -48,9 +49,9 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <GridSplitter x:Name="inputOutputSplitter" Grid.Column="2" Grid.Row="3" Height="7" HorizontalAlignment="Stretch" VerticalAlignment="Top" ResizeBehavior="PreviousAndNext" Style="{DynamicResource GridSplitterStyleHorizontal}"/>
-        <Label x:Name="outputLabel" Content="Output" Grid.Column="2" HorizontalAlignment="Stretch" Grid.Row="3" Margin="0,7,0,0" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
-        <ListView x:Name="outputList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="4" Grid.RowSpan="2"  ItemsSource="{Binding CurrentJob.OutputFiles}" d:DataContext="{d:DesignInstance local:VideoFile}" SelectionChanged="outputList_SelectionChanged">
+        <GridSplitter x:Name="inputOutputSplitter" Grid.Column="2" Grid.Row="3" Height="7" HorizontalAlignment="Stretch" VerticalAlignment="Top" ResizeBehavior="PreviousAndNext" Style="{DynamicResource GridSplitterStyleHorizontal}" Grid.ColumnSpan="2"/>
+        <Label x:Name="outputLabel" Content="Output" Grid.Column="2" HorizontalAlignment="Stretch" Grid.Row="3" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Grid.ColumnSpan="2" Grid.RowSpan="1" Margin="0,7,0,0" />
+        <ListView x:Name="outputList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="4" Grid.RowSpan="1"  ItemsSource="{Binding CurrentJob.OutputFiles}" d:DataContext="{d:DesignInstance local:VideoFile}" SelectionChanged="outputList_SelectionChanged" Grid.ColumnSpan="2" >
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="File #" DisplayMemberBinding="{Binding GroupIndex}"/>
@@ -60,7 +61,7 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="processButton" Content="Process" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="6" Click="processButton_Click"/>
+        <Button x:Name="processButton" Content="Process" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="6" Click="processButton_Click" Grid.ColumnSpan="2"/>
         <Slider x:Name="slider" 
                 Grid.Row="5" 
                 IsSelectionRangeEnabled="True" 
@@ -81,6 +82,10 @@
             <Button Content="Selection End" ToolBar.OverflowMode="Never" Click="Button_SelEnd"/>
             <Button Content="Cut to output" ToolBar.OverflowMode="Never" Click="Button_ToOutput" IsEnabled="{Binding HasCurrentFile}"/>
         </ToolBar>
-        <MediaElement x:Name="mediaElement" Grid.RowSpan="5" ScrubbingEnabled="True" Volume="1" LoadedBehavior="Manual" UnloadedBehavior="Manual"/>
+        <MediaElement x:Name="mediaElement" Grid.RowSpan="5" ScrubbingEnabled="True" Volume="1" LoadedBehavior="Manual" UnloadedBehavior="Manual" />
+        <TextBox x:Name="outputFolderBox" Grid.Column="2" Grid.Row="5" TextWrapping="WrapWithOverflow"  Text="{Binding CurrentJob.OutputFolder}" Tag="Output folder" 
+                 Style="{StaticResource WatermarkedTextBox}" IsReadOnly="True" Height="20" MouseDown="outputFolderBox_MouseDown"/>
+        <TextBox x:Name="outputFilenameBox" Grid.Column="3" Grid.Row="5" TextWrapping="WrapWithOverflow" Text="{Binding CurrentJob.OutputName}" Tag="Output file name" 
+                 Style="{StaticResource WatermarkedTextBox}" Height="20" />
     </Grid>
 </Window>

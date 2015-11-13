@@ -163,5 +163,9 @@ namespace JoinerSplitter
       var ffmpeg = new FFMpeg();
       await ffmpeg.DoJob(DataContext.CurrentJob);
     }
+
+    private void outputFolderBox_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+    }
   }
 }
