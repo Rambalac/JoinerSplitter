@@ -1,0 +1,86 @@
+﻿<Window x:Class="JoinerSplitter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:JoinerSplitter"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance local:AppModel}"
+        Title="MainWindow" Height="350" Width="719">
+    <Grid Name="mainGrid">
+        <Grid.Triggers>
+            <EventTrigger RoutedEvent="Grid.Loaded" SourceName="mainGrid">
+                <EventTrigger.Actions>
+                    <BeginStoryboard Name="ClockStoryboard">
+                        <Storyboard x:Name="storyboard"  SlipBehavior="Slip" CurrentTimeInvalidated="storyboard_CurrentTimeInvalidated"
+
+                                    >
+                            <MediaTimeline Name="timeline" BeginTime="0" Source="{Binding CurrentFile.FilePath}"
+                                 Storyboard.TargetName="mediaElement" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger.Actions>
+            </EventTrigger>
+        </Grid.Triggers>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="53*"/>
+            <RowDefinition Height="33"/>
+            <RowDefinition Height="41*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="250"/>
+        </Grid.ColumnDefinitions>
+        <GridSplitter x:Name="mainSplitter" HorizontalAlignment="Stretch" Grid.Column="1" Grid.RowSpan="7" Width="7"  Style="{DynamicResource GridSplitterStyleVertical}"/>
+        <Label x:Name="inputLabel" Content="Input" Grid.Column="2" HorizontalAlignment="Stretch" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+        <Button x:Name="addButton" Content="Add" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="1" Click="addButton_Click"/>
+        <ListView x:Name="inputList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="2" ItemsSource="{Binding CurrentJob.InputFiles}" d:DataContext="{d:DesignInstance local:VideoFile}" SelectionMode="Single" SelectionChanged="inputList_SelectionChanged">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="File Name" DisplayMemberBinding="{Binding FileName}"/>
+                    <GridViewColumn Header="Duration" DisplayMemberBinding="{Binding Duration,StringFormat=hh\\:mm\\:ss\\.fff}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <GridSplitter x:Name="inputOutputSplitter" Grid.Column="2" Grid.Row="3" Height="7" HorizontalAlignment="Stretch" VerticalAlignment="Top" ResizeBehavior="PreviousAndNext" Style="{DynamicResource GridSplitterStyleHorizontal}"/>
+        <Label x:Name="outputLabel" Content="Output" Grid.Column="2" HorizontalAlignment="Stretch" Grid.Row="3" Margin="0,7,0,0" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+        <ListView x:Name="outputList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="4" Grid.RowSpan="2"  ItemsSource="{Binding CurrentJob.OutputFiles}" d:DataContext="{d:DesignInstance local:VideoFile}" SelectionChanged="outputList_SelectionChanged">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="File #" DisplayMemberBinding="{Binding GroupIndex}"/>
+                    <GridViewColumn Header="Original File" DisplayMemberBinding="{Binding FileName}"/>
+                    <GridViewColumn Header="Start" DisplayMemberBinding="{Binding Start,StringFormat=hh\\:mm\\:ss\\.fff}"/>
+                    <GridViewColumn Header="End" DisplayMemberBinding="{Binding End,StringFormat=hh\\:mm\\:ss\\.fff}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Button x:Name="processButton" Content="Process" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="6" Click="processButton_Click"/>
+        <Slider x:Name="slider" 
+                Grid.Row="5" 
+                IsSelectionRangeEnabled="True" 
+                Minimum="0" 
+                Maximum="{Binding CurrentFile.Duration.TotalSeconds}" 
+                SelectionStart="{Binding CurrentFile.StartSeconds}"
+                SelectionEnd="{Binding CurrentFile.EndSeconds}"
+                TickFrequency="1" 
+                TickPlacement="BottomRight" 
+                ValueChanged="slider_ValueChanged" PreviewMouseDown="slider_PreviewMouseDown" PreviewMouseUp="slider_PreviewMouseUp"/>
+        <ToolBar x:Name="toolBar" HorizontalAlignment="Stretch" Grid.Row="6" ToolBarTray.IsLocked="True" Loaded="toolBar_Loaded">
+            <Button Content="Prev" ToolBar.OverflowMode="Never"/>
+            <Button Content="Start" ToolBar.OverflowMode="Never" Click="Button_Start"/>
+            <Button Name="playButton" Content="Play/Stop" ToolBar.OverflowMode="Never" Click="Button_Play"/>
+            <Button Content="End" ToolBar.OverflowMode="Never" VerticalAlignment="Bottom" Click="Button_End"/>
+            <Button Content="Next" ToolBar.OverflowMode="Never"/>
+            <Button Content="Selection Start" ToolBar.OverflowMode="Never" VerticalAlignment="Bottom" Click="Button_SelStart"/>
+            <Button Content="Selection End" ToolBar.OverflowMode="Never" Click="Button_SelEnd"/>
+            <Button Content="Cut to output" ToolBar.OverflowMode="Never" Click="Button_ToOutput" IsEnabled="{Binding HasCurrentFile}"/>
+        </ToolBar>
+        <MediaElement x:Name="mediaElement" Grid.RowSpan="5" ScrubbingEnabled="True" Volume="1" LoadedBehavior="Manual" UnloadedBehavior="Manual"/>
+    </Grid>
+</Window>

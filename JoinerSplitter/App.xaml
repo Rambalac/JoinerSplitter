@@ -1,0 +1,80 @@
+﻿<Application x:Class="JoinerSplitter.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:JoinerSplitter"
+             Startup="Application_Startup">
+    <Application.Resources>
+        <Style x:Key="GridSplitterPreviewStyle" >
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Fill="#80000000"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="GridSplitterStyleHorizontal" TargetType="{x:Type GridSplitter}">
+            <Setter Property="Background"
+                Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+            <Setter Property="PreviewStyle" Value="{StaticResource GridSplitterPreviewStyle}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type GridSplitter}">
+                        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}">
+                            <Canvas RenderOptions.EdgeMode="Aliased" UseLayoutRounding="True"
+                                Height="5" VerticalAlignment="Center"
+                                Width="50" HorizontalAlignment="Center">
+                                <Line X1="0" X2="50" Y1="0" Y2="0"
+                                  Stroke="White" StrokeThickness="1"/>
+                                <Line X1="0" X2="50" Y1="1" Y2="1"
+                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                                <Line X1="0" X2="50" Y1="2" Y2="2"
+                                  Stroke="White" StrokeThickness="1"/>
+                                <Line X1="0" X2="50" Y1="3" Y2="3"
+                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                                <Line X1="0" X2="50" Y1="4" Y2="4"
+                                  Stroke="White" StrokeThickness="1"/>
+                                <Line X1="0" X2="50" Y1="5" Y2="5"
+                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                            </Canvas>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="GridSplitterStyleVertical" TargetType="{x:Type GridSplitter}">
+            <Setter Property="Background"
+                Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+            <Setter Property="PreviewStyle" Value="{StaticResource GridSplitterPreviewStyle}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type GridSplitter}">
+                        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}">
+                            <Canvas RenderOptions.EdgeMode="Aliased" UseLayoutRounding="True"
+                                Width="5" HorizontalAlignment="Center"
+                                Height="50" VerticalAlignment="Center">
+                                <Line Y1="0" Y2="50" X1="0" X2="0"
+                                  Stroke="White" StrokeThickness="1"/>
+                                <Line Y1="0" Y2="50" X1="1" X2="1"
+                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                                <Line Y1="0" Y2="50" X1="2" X2="2"
+                                  Stroke="White" StrokeThickness="1"/>
+                                <Line Y1="0" Y2="50" X1="3" X2="3"
+                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                                <Line Y1="0" Y2="50" X1="4" X2="4"
+                                  Stroke="White" StrokeThickness="1"/>
+                                <Line Y1="0" Y2="50" X1="5" X2="5"
+                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                            </Canvas>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Application.Resources>
+    
+</Application>
