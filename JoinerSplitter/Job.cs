@@ -10,14 +10,72 @@ using System.Threading.Tasks;
 namespace JoinerSplitter
 {
 
-  public class Job
-  {
-    readonly ObservableCollection<VideoFile> inputFiles = new ObservableCollection<VideoFile>();
-    readonly ObservableCollection<VideoFile> outputFiles = new ObservableCollection<VideoFile>();
+    public class Job : INotifyPropertyChanged
+    {
+        public class FilesGroup
+        {
+            public readonly string FilePath;
+            public readonly ICollection<VideoFile> Files;
 
-    public ObservableCollection<VideoFile> InputFiles => inputFiles;
-    public ObservableCollection<VideoFile> OutputFiles => outputFiles;
-    public string OutputName { get; set; }
-    public string OutputFolder { get; set; }
-  }
+            public FilesGroup(string filePath, ICollection<VideoFile> files)
+            {
+                this.FilePath = filePath;
+                this.Files = files;
+            }
+        }
+
+        readonly ObservableCollection<VideoFile> files = new ObservableCollection<VideoFile>();
+
+        public ObservableCollection<VideoFile> Files => files;
+        private string outputName;
+
+        public string OutputFolder
+        {
+            get
+            {
+                return outputFolder;
+            }
+
+            set
+            {
+                outputFolder = value;
+                OnPropertyChanged(nameof(OutputFolder));
+            }
+        }
+
+        public string OutputName
+        {
+            get
+            {
+                return outputName;
+            }
+
+            set
+            {
+                outputName = value;
+                OnPropertyChanged(nameof(OutputName));
+            }
+        }
+
+        public ICollection<FilesGroup> FileGroups
+        {
+            get
+            {
+                if (!Files.Any()) return new FilesGroup[] { };
+                var folder = OutputFolder ?? Path.GetDirectoryName(Files.First().FilePath);
+                if (Files.Select(f => f.GroupIndex).Distinct().Count() == 1) return new FilesGroup[] { new FilesGroup(Path.Combine(folder, OutputName), Files) };
+                var noext = Path.GetFileNameWithoutExtension(OutputName);
+                var ext = Path.GetExtension(OutputName);
+                return Files.GroupBy(f => f.GroupIndex, (k, f) => new FilesGroup(Path.Combine(folder, $"{noext}_{k}{ext}"), f.ToList())).ToList();
+            }
+        }
+        private string outputFolder;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+    }
 }

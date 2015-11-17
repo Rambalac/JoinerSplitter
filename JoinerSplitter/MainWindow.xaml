@@ -6,16 +6,14 @@
         xmlns:local="clr-namespace:JoinerSplitter"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance local:AppModel}"
-        Title="MainWindow" Height="350" Width="719">
+        Title="MainWindow" Height="541" Width="719">
     <Grid Name="mainGrid">
         <Grid.Triggers>
             <EventTrigger RoutedEvent="Grid.Loaded" SourceName="mainGrid">
                 <EventTrigger.Actions>
                     <BeginStoryboard Name="ClockStoryboard">
-                        <Storyboard x:Name="storyboard"  SlipBehavior="Slip" CurrentTimeInvalidated="storyboard_CurrentTimeInvalidated"
-
-                                    >
-                            <MediaTimeline Name="timeline" BeginTime="0" Source="{Binding CurrentFile.FilePath}"
+                        <Storyboard x:Name="storyboard"  SlipBehavior="Slip" CurrentTimeInvalidated="storyboard_CurrentTimeInvalidated">
+                            <MediaTimeline Name="timeline" Source="{Binding CurrentFile.FileUri}"
                                  Storyboard.TargetName="mediaElement" />
                         </Storyboard>
                     </BeginStoryboard>
@@ -25,33 +23,25 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="9*"/>
-            <RowDefinition Height="33"/>
-            <RowDefinition Height="7*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" MinHeight="27"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="125"/>
+            <ColumnDefinition Width="76"/>
             <ColumnDefinition Width="125"/>
         </Grid.ColumnDefinitions>
         <GridSplitter x:Name="mainSplitter" HorizontalAlignment="Stretch" Grid.Column="1" Grid.RowSpan="7"  Style="{DynamicResource GridSplitterStyleVertical}"/>
-        <Label x:Name="inputLabel" Content="Input" Grid.Column="2" HorizontalAlignment="Stretch" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Grid.ColumnSpan="2" />
-        <Button x:Name="addButton" Content="Add" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="1" Click="addButton_Click" Grid.ColumnSpan="2"/>
-        <ListView x:Name="inputList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="2" ItemsSource="{Binding CurrentJob.InputFiles}" d:DataContext="{d:DesignInstance local:VideoFile}" SelectionMode="Single" SelectionChanged="inputList_SelectionChanged" Grid.ColumnSpan="2" Grid.RowSpan="1">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="File Name" DisplayMemberBinding="{Binding FileName}"/>
-                    <GridViewColumn Header="Duration" DisplayMemberBinding="{Binding Duration,StringFormat=hh\\:mm\\:ss\\.fff}"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
-        <GridSplitter x:Name="inputOutputSplitter" Grid.Column="2" Grid.Row="3" Height="7" HorizontalAlignment="Stretch" VerticalAlignment="Top" ResizeBehavior="PreviousAndNext" Style="{DynamicResource GridSplitterStyleHorizontal}" Grid.ColumnSpan="2"/>
-        <Label x:Name="outputLabel" Content="Output" Grid.Column="2" HorizontalAlignment="Stretch" Grid.Row="3" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Grid.ColumnSpan="2" Grid.RowSpan="1" Margin="0,7,0,0" />
-        <ListView x:Name="outputList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="4" Grid.RowSpan="1"  ItemsSource="{Binding CurrentJob.OutputFiles}" d:DataContext="{d:DesignInstance local:VideoFile}" SelectionChanged="outputList_SelectionChanged" Grid.ColumnSpan="2" >
+        <ToolBar x:Name="filesToolBar"  Grid.Column="2"  Grid.Row="0" Grid.ColumnSpan="2" ToolBarTray.IsLocked="True" Loaded="filesToolBar_Loaded">
+            <Button Content="Add" Click="addButton_Click" ToolBar.OverflowMode="Never" />
+            <Button Content="Up" IsEnabled="{Binding HasCurrentFile}" ToolBar.OverflowMode="Never" />
+            <Button Content="Down" IsEnabled="{Binding HasCurrentFile}" ToolBar.OverflowMode="Never" />
+            <Button Content="Delete" IsEnabled="{Binding HasCurrentFile}" ToolBar.OverflowMode="Never" />
+            <Button Content="Duplicate" IsEnabled="{Binding HasCurrentFile}" ToolBar.OverflowMode="Never" />
+        </ToolBar>
+        <ListView x:Name="filesList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="1"  ItemsSource="{Binding CurrentJob.Files}" d:DataContext="{d:DesignInstance local:VideoFile}" SelectionChanged="outputList_SelectionChanged" Grid.ColumnSpan="2" >
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="File #" DisplayMemberBinding="{Binding GroupIndex}"/>
@@ -61,9 +51,9 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="processButton" Content="Process" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="6" Click="processButton_Click" Grid.ColumnSpan="2"/>
+        <Button x:Name="processButton" Content="Process" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="6" Click="processButton_Click" Grid.ColumnSpan="3"/>
         <Slider x:Name="slider" 
-                Grid.Row="5" 
+                Grid.Row="2" 
                 IsSelectionRangeEnabled="True" 
                 Minimum="0" 
                 Maximum="{Binding CurrentFile.Duration.TotalSeconds}" 
@@ -74,18 +64,30 @@
                 ValueChanged="slider_ValueChanged" PreviewMouseDown="slider_PreviewMouseDown" PreviewMouseUp="slider_PreviewMouseUp"/>
         <ToolBar x:Name="toolBar" HorizontalAlignment="Stretch" Grid.Row="6" ToolBarTray.IsLocked="True" Loaded="toolBar_Loaded">
             <Button Content="Prev" ToolBar.OverflowMode="Never"/>
-            <Button Content="Start" ToolBar.OverflowMode="Never" Click="Button_Start"/>
-            <Button Name="playButton" Content="Play/Stop" ToolBar.OverflowMode="Never" Click="Button_Play"/>
-            <Button Content="End" ToolBar.OverflowMode="Never" VerticalAlignment="Bottom" Click="Button_End"/>
+            <Button ToolTip="Seek to the start of selection" ToolBar.OverflowMode="Never" Click="Button_Start" IsEnabled="{Binding HasCurrentFile}">
+                <Image Source="Icons/SeekStart.png"/>
+            </Button>
+            <Button ToolTip="Selection Start" ToolBar.OverflowMode="Never" VerticalAlignment="Bottom" Click="Button_SelStart" IsEnabled="{Binding HasCurrentFile}">
+                <Image Source="Icons/CutStart.png"/>
+            </Button>
+            <Button Name="playButton" ToolTip="Play/stop video" ToolBar.OverflowMode="Never" Click="Button_Play" IsEnabled="{Binding HasCurrentFile}">
+                <Image Source="Icons/PlayPause.png"/>
+            </Button>
+            <Button Name="splitButton" ToolTip="Split selected cut to separate videos by current position" ToolBar.OverflowMode="Never" Click="splitButton_Click" IsEnabled="{Binding HasCurrentFile}">
+                <Image Source="Icons/Split.png"/>
+            </Button>
+            <Button ToolTip="Selection End" ToolBar.OverflowMode="Never" Click="Button_SelEnd" IsEnabled="{Binding HasCurrentFile}">
+                <Image Source="Icons/CutEnd.png"/>
+            </Button>
+            <Button ToolTip="Seek to the end of selection" ToolBar.OverflowMode="Never" VerticalAlignment="Bottom" Click="Button_End" IsEnabled="{Binding HasCurrentFile}">
+                <Image Source="Icons/SeekEnd.png"/>
+            </Button>
             <Button Content="Next" ToolBar.OverflowMode="Never"/>
-            <Button Content="Selection Start" ToolBar.OverflowMode="Never" VerticalAlignment="Bottom" Click="Button_SelStart"/>
-            <Button Content="Selection End" ToolBar.OverflowMode="Never" Click="Button_SelEnd"/>
-            <Button Content="Cut to output" ToolBar.OverflowMode="Never" Click="Button_ToOutput" IsEnabled="{Binding HasCurrentFile}"/>
         </ToolBar>
-        <MediaElement x:Name="mediaElement" Grid.RowSpan="5" ScrubbingEnabled="True" Volume="1" LoadedBehavior="Manual" UnloadedBehavior="Manual" />
-        <TextBox x:Name="outputFolderBox" Grid.Column="2" Grid.Row="5" TextWrapping="WrapWithOverflow"  Text="{Binding CurrentJob.OutputFolder}" Tag="Output folder" 
-                 Style="{StaticResource WatermarkedTextBox}" IsReadOnly="True" Height="20" MouseDown="outputFolderBox_MouseDown"/>
-        <TextBox x:Name="outputFilenameBox" Grid.Column="3" Grid.Row="5" TextWrapping="WrapWithOverflow" Text="{Binding CurrentJob.OutputName}" Tag="Output file name" 
-                 Style="{StaticResource WatermarkedTextBox}" Height="20" />
+        <MediaElement x:Name="mediaElement" Grid.RowSpan="2" ScrubbingEnabled="True" Volume="1" LoadedBehavior="Manual" UnloadedBehavior="Manual" />
+        <TextBox x:Name="outputFolderBox" Grid.Column="2" Grid.Row="2" TextWrapping="WrapWithOverflow"  Text="{Binding CurrentJob.OutputFolder}" Tag="Output folder" 
+                 Style="{StaticResource WatermarkedTextBox}" IsReadOnly="True" Height="20" PreviewMouseDown="outputFolderBox_MouseDown" />
+        <TextBox x:Name="outputFilenameBox" Grid.Column="3" Grid.Row="2" TextWrapping="WrapWithOverflow" Text="{Binding CurrentJob.OutputName}" Tag="Output file name" 
+                 Style="{StaticResource WatermarkedTextBox}" Height="20" PreviewTextInput="outputFilenameBox_TextInput" />
     </Grid>
 </Window>
