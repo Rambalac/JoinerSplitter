@@ -90,17 +90,17 @@ namespace JoinerSplitter
         bool changingSlider = false;
         private void storyboard_CurrentTimeInvalidated(object sender, EventArgs e)
         {
-            if (!changingSlider)
-            {
-                slider.Value = (sender as ClockGroup).CurrentTime?.TotalSeconds ?? 0;
-            }
+            changingSlider = true;
+            slider.Value = (sender as ClockGroup).CurrentTime?.TotalSeconds ?? 0;
+            changingSlider = false;
         }
 
         private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            changingSlider = true;
-            Seek(TimeSpan.FromSeconds(e.NewValue));
-            changingSlider = false;
+            if (!changingSlider)
+            {
+                Seek(TimeSpan.FromSeconds(e.NewValue));
+            }
         }
 
         private void Button_Start(object sender, RoutedEventArgs e)
@@ -115,14 +115,13 @@ namespace JoinerSplitter
 
         private void Seek(TimeSpan timeSpan, TimeSeekOrigin origin = TimeSeekOrigin.BeginTime)
         {
+            wasPaused = storyboard.GetIsPaused(mainGrid);
             storyboard.SeekAlignedToLastTick(mainGrid, timeSpan, origin);
         }
 
         bool wasPaused;
         private void slider_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            changingSlider = true;
-
             wasPaused = storyboard.GetIsPaused(mainGrid);
             storyboard.Pause(mainGrid);
         }
@@ -131,7 +130,6 @@ namespace JoinerSplitter
         {
             if (!wasPaused)
                 storyboard.Resume(mainGrid);
-            changingSlider = false;
         }
 
         private void OpenVideo(VideoFile video)
@@ -200,6 +198,8 @@ namespace JoinerSplitter
             };
             DataContext.CurrentFile.End = currentTime;
             DataContext.CurrentJob.Files.Insert(currentIndex + 1, newFile);
+            for (var i = currentIndex + 2; i < DataContext.CurrentJob.Files.Count; i++)
+                DataContext.CurrentJob.Files[i].GroupIndex += 1;
         }
     }
 }

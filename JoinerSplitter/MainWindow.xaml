@@ -30,10 +30,10 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="76"/>
-            <ColumnDefinition Width="125"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <GridSplitter x:Name="mainSplitter" HorizontalAlignment="Stretch" Grid.Column="1" Grid.RowSpan="7"  Style="{DynamicResource GridSplitterStyleVertical}"/>
+        <GridSplitter x:Name="mainSplitter" Grid.Column="1" Grid.RowSpan="7" HorizontalAlignment="Stretch" Style="{DynamicResource GridSplitterStyleVertical}"/>
         <ToolBar x:Name="filesToolBar"  Grid.Column="2"  Grid.Row="0" Grid.ColumnSpan="2" ToolBarTray.IsLocked="True" Loaded="filesToolBar_Loaded">
             <Button Content="Add" Click="addButton_Click" ToolBar.OverflowMode="Never" />
             <Button Content="Up" IsEnabled="{Binding HasCurrentFile}" ToolBar.OverflowMode="Never" />
@@ -51,8 +51,9 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="processButton" Content="Process" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="6" Click="processButton_Click" Grid.ColumnSpan="3"/>
+        <Button x:Name="processButton" Content="Process" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="6" Click="processButton_Click" Grid.ColumnSpan="2"/>
         <Slider x:Name="slider" 
+                IsMoveToPointEnabled="True"
                 Grid.Row="2" 
                 IsSelectionRangeEnabled="True" 
                 Minimum="0" 
@@ -62,7 +63,7 @@
                 TickFrequency="1" 
                 TickPlacement="BottomRight" 
                 ValueChanged="slider_ValueChanged" PreviewMouseDown="slider_PreviewMouseDown" PreviewMouseUp="slider_PreviewMouseUp"/>
-        <ToolBar x:Name="toolBar" HorizontalAlignment="Stretch" Grid.Row="6" ToolBarTray.IsLocked="True" Loaded="toolBar_Loaded">
+        <ToolBar x:Name="toolBar" Grid.Row="6" ToolBarTray.IsLocked="True" Loaded="toolBar_Loaded">
             <Button Content="Prev" ToolBar.OverflowMode="Never"/>
             <Button ToolTip="Seek to the start of selection" ToolBar.OverflowMode="Never" Click="Button_Start" IsEnabled="{Binding HasCurrentFile}">
                 <Image Source="Icons/SeekStart.png"/>
@@ -86,8 +87,8 @@
         </ToolBar>
         <MediaElement x:Name="mediaElement" Grid.RowSpan="2" ScrubbingEnabled="True" Volume="1" LoadedBehavior="Manual" UnloadedBehavior="Manual" />
         <TextBox x:Name="outputFolderBox" Grid.Column="2" Grid.Row="2" TextWrapping="WrapWithOverflow"  Text="{Binding CurrentJob.OutputFolder}" Tag="Output folder" 
-                 Style="{StaticResource WatermarkedTextBox}" IsReadOnly="True" Height="20" PreviewMouseDown="outputFolderBox_MouseDown" />
+                 Style="{StaticResource WatermarkedTextBox}" IsReadOnly="True" PreviewMouseDown="outputFolderBox_MouseDown" />
         <TextBox x:Name="outputFilenameBox" Grid.Column="3" Grid.Row="2" TextWrapping="WrapWithOverflow" Text="{Binding CurrentJob.OutputName}" Tag="Output file name" 
-                 Style="{StaticResource WatermarkedTextBox}" Height="20" PreviewTextInput="outputFilenameBox_TextInput" />
+                 Style="{StaticResource WatermarkedTextBox}"  PreviewTextInput="outputFilenameBox_TextInput" />
     </Grid>
 </Window>

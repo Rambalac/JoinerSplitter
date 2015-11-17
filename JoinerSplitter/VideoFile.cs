@@ -16,7 +16,7 @@ namespace JoinerSplitter
         public string FileName => Path.GetFileName(FilePath);
         private TimeSpan duration;
 
-        public int GroupIndex { get; set; }
+        private int groupIndex;
         private TimeSpan start;
         private TimeSpan end;
 
@@ -94,6 +94,20 @@ namespace JoinerSplitter
             get { return end.TotalSeconds; }
 
             set { End = TimeSpan.FromSeconds(value); }
+        }
+
+        public int GroupIndex
+        {
+            get
+            {
+                return groupIndex;
+            }
+
+            set
+            {
+                groupIndex = value;
+                OnPropertyChanged(nameof(GroupIndex));
+            }
         }
 
         public VideoFile()
