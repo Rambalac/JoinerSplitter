@@ -1,7 +1,7 @@
 JoinerSplitter
 ==============
 
-Another GUI for Ffmpeg for fast video joining and cutting.
+Another GUI for FFMpeg for fast video joining and cutting.
 
 Installation
 ------------
