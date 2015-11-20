@@ -31,7 +31,6 @@ namespace JoinerSplitter
 
         public bool HasMoreGroupsThanOne => Files.Select(f => f.GroupIndex).Distinct().Count() > 1;
 
-
         public Job()
         {
             files.CollectionChanged += Files_CollectionChanged;

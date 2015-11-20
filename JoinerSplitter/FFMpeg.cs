@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,7 +23,7 @@ namespace JoinerSplitter
             try
             {
                 var line = GetLine(proc.ResultLines);
-                var result = double.Parse(line);
+                var result = double.Parse(line, CultureInfo.InvariantCulture);
 
                 return TimeSpan.FromSeconds(result);
             }
@@ -33,14 +34,14 @@ namespace JoinerSplitter
         }
 
         // frame=   81 fps=0.0 q=-1.0 Lsize=   20952kB time = 00:00:03.09 bitrate=55455.1kbits/s
-        readonly Regex timeExtract = new Regex(@"\s*frame\s*=\s*(?<frame>\d*)\s*fps\s*=\s*(?<fps>[\d.]*)\s*q\s*=[\d-+.]*\s*Lsize\s*=\s*(\d*\w{1,5})?\s*time\s*=\s*(?<time>\d{2}:\d{2}:\d{2}\.\d{2}).*");
+        readonly Regex timeExtract = new Regex(@"\s*frame\s*=\s*(?<frame>\d*)\s*fps\s*=\s*(?<fps>[\d.]*)\s*q\s*=[\d-+.]*\s*(L)?size\s*=\s*(\d*\w{1,5})?\s*time\s*=\s*(?<time>\d{2}:\d{2}:\d{2}\.\d{2}).*");
 
         void UpdateProgress(Action<int> progress, string str, double totalSec, double done, double coof = 1)
         {
             var m = timeExtract.Match(str);
             if (m.Success)
             {
-                var time = TimeSpan.Parse(m.Groups["time"].Value).TotalSeconds;
+                var time = TimeSpan.Parse(m.Groups["time"].Value, CultureInfo.InvariantCulture).TotalSeconds;
                 progress?.Invoke((int)((done + time * coof) * 100 / (2 * totalSec)));
             }
 

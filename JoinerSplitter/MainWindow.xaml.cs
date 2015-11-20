@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -26,6 +27,7 @@ namespace JoinerSplitter
     public partial class MainWindow : Window
     {
         new AppModel DataContext => (AppModel)base.DataContext;
+        Storyboard storyboard;
 
         public MainWindow()
         {
@@ -38,7 +40,7 @@ namespace JoinerSplitter
             if (!e.DataObject.GetDataPresent(e.FormatToApply)) return;
             string text = e.DataObject.GetData(e.FormatToApply).ToString();
             TimeSpan ts;
-            if (TimeSpan.TryParse(text, out ts))
+            if (TimeSpan.TryParse(text, CultureInfo.InvariantCulture, out ts))
             {
                 (sender as TextBox).Text = ts.ToString();
             }
@@ -46,7 +48,7 @@ namespace JoinerSplitter
 
         }
 
-         void RemoveOverflow(ToolBar toolBar)
+        void RemoveOverflow(ToolBar toolBar)
         {
             var overflowGrid = toolBar.Template.FindName("OverflowGrid", toolBar) as FrameworkElement;
             if (overflowGrid != null)
@@ -137,7 +139,14 @@ namespace JoinerSplitter
 
         void OpenVideo(VideoFile video)
         {
-            storyboard.Stop(mainGrid);
+            storyboard?.Stop(mainGrid);
+
+            storyboard = new Storyboard();
+            var timeline = new MediaTimeline(video.FileUri);
+            storyboard.Children.Add(timeline);
+            Storyboard.SetTarget(timeline, mediaElement);
+            storyboard.CurrentTimeInvalidated += storyboard_CurrentTimeInvalidated;
+
             DataContext.CurrentFile = video;
             storyboard.Begin(mainGrid, true);
         }

@@ -32,17 +32,6 @@
             <ColumnDefinition Width="300"/>
         </Grid.ColumnDefinitions>
         <Grid x:Name="mainGrid" Grid.RowSpan="5">
-            <Grid.Triggers>
-                <EventTrigger RoutedEvent="FrameworkElement.Loaded" SourceName="mainGrid">
-                    <BeginStoryboard x:Name="ClockStoryboard">
-                        <Storyboard x:Name="storyboard"  SlipBehavior="Slip" CurrentTimeInvalidated="storyboard_CurrentTimeInvalidated">
-                            <MediaTimeline x:Name="timeline" Source="{Binding CurrentFile.FileUri}"
-                            Storyboard.TargetName="mediaElement" />
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-            </Grid.Triggers>
-
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="Auto" />

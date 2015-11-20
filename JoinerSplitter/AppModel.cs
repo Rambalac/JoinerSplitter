@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 namespace JoinerSplitter
 {
@@ -24,6 +25,8 @@ namespace JoinerSplitter
         }
 
         public bool HasCurrentFile => CurrentFile != null;
+
+        public Uri CurrentFileUri => CurrentFile?.FileUri ?? new Uri("");
 
         public Job CurrentJob
         {

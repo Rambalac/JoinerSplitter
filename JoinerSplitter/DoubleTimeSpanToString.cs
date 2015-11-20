@@ -19,7 +19,7 @@ namespace JoinerSplitter
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var val = value.ToString();
-            return TimeSpan.Parse(val).TotalSeconds;
+            return TimeSpan.Parse(val, CultureInfo.InvariantCulture).TotalSeconds;
         }
     }
     public class DoubleToTimeSpan : IValueConverter
