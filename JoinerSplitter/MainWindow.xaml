@@ -1,121 +1,118 @@
-﻿<Window x:Class="JoinerSplitter.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JoinerSplitter"
         xmlns:dat="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Class="JoinerSplitter.MainWindow"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance local:AppModel}"
+        d:DataContext="{d:DesignInstance {x:Type local:AppModel}}"
         Title="MainWindow" Height="541" Width="719">
     <Window.Resources>
         <CollectionViewSource Source="{Binding CurrentJob.Files}" IsLiveGroupingRequested="True" x:Key="files">
             <CollectionViewSource.GroupDescriptions>
-                <dat:PropertyGroupDescription PropertyName="GroupIndex"/>
+                <PropertyGroupDescription PropertyName="GroupIndex"/>
             </CollectionViewSource.GroupDescriptions>
         </CollectionViewSource>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <local:DoubleTimeSpanToString x:Key="DoubleTimeSpanToStringConverter"/>
+        <local:DoubleToTimeSpan x:Key="DoubleToTimeSpanConverter"/>
     </Window.Resources>
-    <Grid Name="mainGrid">
+    <Grid x:Name="mainGrid">
         <Grid.Triggers>
-            <EventTrigger RoutedEvent="Grid.Loaded" SourceName="mainGrid">
-                <EventTrigger.Actions>
-                    <BeginStoryboard Name="ClockStoryboard">
-                        <Storyboard x:Name="storyboard"  SlipBehavior="Slip" CurrentTimeInvalidated="storyboard_CurrentTimeInvalidated">
-                            <MediaTimeline Name="timeline" Source="{Binding CurrentFile.FileUri}"
-                                 Storyboard.TargetName="mediaElement" />
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger.Actions>
+            <EventTrigger RoutedEvent="FrameworkElement.Loaded" SourceName="mainGrid">
+                <BeginStoryboard x:Name="ClockStoryboard">
+                    <Storyboard x:Name="storyboard"  SlipBehavior="Slip" CurrentTimeInvalidated="storyboard_CurrentTimeInvalidated">
+                        <MediaTimeline x:Name="timeline" Source="{Binding CurrentFile.FileUri}"
+                            Storyboard.TargetName="mediaElement" />
+                    </Storyboard>
+                </BeginStoryboard>
             </EventTrigger>
         </Grid.Triggers>
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="148"/>
+            <ColumnDefinition Width="230"/>
         </Grid.ColumnDefinitions>
         <MediaElement x:Name="mediaElement" Grid.RowSpan="2" Visibility="{Binding CurrentFile, TargetNullValue=Hidden}" ScrubbingEnabled="True" Volume="1" LoadedBehavior="Manual" UnloadedBehavior="Manual" />
         <Slider x:Name="slider" 
-                IsMoveToPointEnabled="True"
-                Grid.Row="3" 
-                IsSelectionRangeEnabled="True" 
-                Minimum="0" 
-                Maximum="{Binding CurrentFile.Duration.TotalSeconds,  FallbackValue=0}" 
-                SelectionStart="{Binding CurrentFile.StartSeconds,  FallbackValue=0}"
-                SelectionEnd="{Binding CurrentFile.EndSeconds,  FallbackValue=0}"
-                TickFrequency="1" 
-                TickPlacement="BottomRight"
-                IsEnabled="{Binding HasCurrentFile}"
-                ValueChanged="slider_ValueChanged" PreviewMouseDown="slider_PreviewMouseDown" PreviewMouseUp="slider_PreviewMouseUp"/>
-        <ToolBar x:Name="toolBar" Grid.Row="4" ToolBarTray.IsLocked="True" 
-                IsEnabled="{Binding HasCurrentFile}" 
-                Loaded="toolBar_Loaded">
+            IsMoveToPointEnabled="True"
+            Grid.Row="3" 
+            IsSelectionRangeEnabled="True" 
+            Minimum="0" 
+            Maximum="{Binding CurrentFile.Duration.TotalSeconds, FallbackValue=0}" 
+            SelectionStart="{Binding CurrentFile.StartSeconds, FallbackValue=0}"
+            SelectionEnd="{Binding CurrentFile.EndSeconds, FallbackValue=0}"
+            TickFrequency="1" 
+            TickPlacement="BottomRight"
+            IsEnabled="{Binding HasCurrentFile}"
+                Margin="0,0,0,5"
+            ValueChanged="slider_ValueChanged" PreviewMouseDown="slider_PreviewMouseDown" PreviewMouseUp="slider_PreviewMouseUp"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="4" IsEnabled="{Binding HasCurrentFile}" >
             <Button Content="Prev" ToolBar.OverflowMode="Never"/>
-            <Button ToolTip="Seek to the start of selection" ToolBar.OverflowMode="Never" Click="Button_Start">
+            <Button ToolTip="Seek to the start of selection" Click="Button_Start">
                 <Image Source="Icons/SeekStart.png"/>
             </Button>
-            <Button ToolTip="Selection Start" ToolBar.OverflowMode="Never" VerticalAlignment="Bottom" Click="Button_SelStart">
+            <Button ToolTip="Selection Start" Click="Button_SelStart">
                 <Image Source="Icons/CutStart.png"/>
             </Button>
-            <Button Name="playButton" ToolTip="Play/stop video" ToolBar.OverflowMode="Never" Click="Button_Play">
+            <Button x:Name="playButton" ToolTip="Play/stop video" Click="Button_Play">
                 <Image Source="Icons/PlayPause.png"/>
             </Button>
-            <Button Name="splitButton" ToolTip="Split selected cut to separate videos by current position" ToolBar.OverflowMode="Never" Click="splitButton_Click">
-                <Image Source="Icons/Cut_6523.png"/>
+            <Button x:Name="splitButton" ToolTip="Split selected cut to separate videos by current position" Click="splitButton_Click">
+                <Image Source="Icons/Cut_6523_24.png"/>
             </Button>
-            <Button ToolTip="Selection End" ToolBar.OverflowMode="Never" Click="Button_SelEnd">
+            <Button ToolTip="Selection End" Click="Button_SelEnd">
                 <Image Source="Icons/CutEnd.png"/>
             </Button>
-            <Button ToolTip="Seek to the end of selection" ToolBar.OverflowMode="Never" VerticalAlignment="Bottom" Click="Button_End">
+            <Button ToolTip="Seek to the end of selection" Click="Button_End">
                 <Image Source="Icons/SeekEnd.png"/>
             </Button>
             <Button Content="Next" ToolBar.OverflowMode="Never"/>
-        </ToolBar>
+        </StackPanel>
         <GridSplitter x:Name="mainSplitter" Grid.Column="1" Grid.RowSpan="5" HorizontalAlignment="Stretch" Style="{DynamicResource GridSplitterStyleVertical}"/>
-        <ToolBar x:Name="filesToolBar"  Grid.Column="2"  Grid.Row="0" ToolBarTray.IsLocked="True" Loaded="filesToolBar_Loaded">
+        <StackPanel Orientation="Horizontal" Grid.Column="2"  Grid.Row="0">
             <Button ToolTip="Add video" Click="addButton_Click" ToolBar.OverflowMode="Never">
                 <Image Source="Icons/AddMark_10580_inverse.png"/>
             </Button>
-            <Button ToolTip="Move files up in group or to previous group" IsEnabled="{Binding HasCurrentFile}" ToolBar.OverflowMode="Never" Click="Button_MoveUp">
+            <Button ToolTip="Move files up in group or to previous group" IsEnabled="{Binding HasCurrentFile}" Click="Button_MoveUp">
                 <Image Source="Icons/arrow_Up_16xLG.png"/>
             </Button>
-            <Button ToolTip="Down" IsEnabled="{Binding HasCurrentFile}" ToolBar.OverflowMode="Never" Click="Button_MoveDown">
+            <Button ToolTip="Down" IsEnabled="{Binding HasCurrentFile}" Click="Button_MoveDown">
                 <Image Source="Icons/arrow_Down_16xLG.png"/>
             </Button>
-            <Button ToolTip="Split" IsEnabled="{Binding HasCurrentFile}" ToolBar.OverflowMode="Never" Click="Button_SplitFiles">
+            <Button ToolTip="Split" IsEnabled="{Binding HasCurrentFile}" Click="Button_SplitFiles">
                 <Image Source="Icons/Cut_6523.png"/>
             </Button>
-            <Button ToolTip="Duplicate" IsEnabled="{Binding HasCurrentFile}" ToolBar.OverflowMode="Never" Click="Button_Duplicate">
+            <Button ToolTip="Duplicate" IsEnabled="{Binding HasCurrentFile}" Click="Button_Duplicate">
                 <Image Source="Icons/Copy_6524.png"/>
             </Button>
-            <Button ToolTip="Delete" IsEnabled="{Binding HasCurrentFile}" ToolBar.OverflowMode="Never" Click="Button_Delete">
+            <Button ToolTip="Delete" IsEnabled="{Binding HasCurrentFile}" Click="Button_Delete">
                 <Image Source="Icons/action_Cancel_16xLG.png"/>
             </Button>
 
-        </ToolBar>
-        <ListView x:Name="filesList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="1"  ItemsSource="{Binding Source={StaticResource files}}" d:DataContext="{d:DesignInstance local:VideoFile}" SelectionChanged="outputList_SelectionChanged" Grid.RowSpan="2">
+        </StackPanel>
+        <ListView x:Name="filesList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="1"  ItemsSource="{Binding Source={StaticResource files}}" d:DataContext="{d:DesignInstance {x:Type local:VideoFile}}" SelectionChanged="outputList_SelectionChanged">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Original File" DisplayMemberBinding="{Binding FileName}"/>
-                    <GridViewColumn Header="Start" DisplayMemberBinding="{Binding Start,StringFormat=hh\\:mm\\:ss\\.fff}"/>
-                    <GridViewColumn Header="End" DisplayMemberBinding="{Binding End,StringFormat=hh\\:mm\\:ss\\.fff}"/>
+                    <GridViewColumn Header="Start" DisplayMemberBinding="{Binding Start, StringFormat=hh\\:mm\\:ss\\.fff}"/>
+                    <GridViewColumn Header="End" DisplayMemberBinding="{Binding End, StringFormat=hh\\:mm\\:ss\\.fff}"/>
                 </GridView>
             </ListView.View>
-            <ListBox.GroupStyle>
+            <ListView.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>
                         <DataTemplate>
-                            <Grid Visibility="{Binding RelativeSource={RelativeSource FindAncestor, 
-AncestorType={x:Type Window}}, Path=DataContext.CurrentJob.HasMoreGroupsThanOne, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid Visibility="{Binding DataContext.CurrentJob.HasMoreGroupsThanOne, Converter={StaticResource BooleanToVisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
                                     <ColumnDefinition Width="Auto"/>
@@ -128,18 +125,23 @@ AncestorType={x:Type Window}}, Path=DataContext.CurrentJob.HasMoreGroupsThanOne,
                         </DataTemplate>
                     </GroupStyle.HeaderTemplate>
                 </GroupStyle>
-            </ListBox.GroupStyle>
+            </ListView.GroupStyle>
         </ListView>
-        <Button x:Name="processButton" Content="Process" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="4" Click="processButton_Click"/>
+        <Button x:Name="processButton" Content="Export" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="4" Click="processButton_Click"/>
 
         <TextBox x:Name="outputFolderBox" Grid.Column="2" Grid.Row="2" TextWrapping="WrapWithOverflow"  Text="{Binding CurrentJob.OutputFolder}" Tag="Output folder" 
-                 Style="{StaticResource WatermarkedTextBox}" IsReadOnly="True" PreviewMouseDown="outputFolderBox_MouseDown" />
+            Style="{StaticResource WatermarkedTextBox}" IsReadOnly="True" PreviewMouseDown="outputFolderBox_MouseDown" />
         <TextBox x:Name="outputFilenameBox" Grid.Column="2" Grid.Row="3" TextWrapping="WrapWithOverflow" Text="{Binding CurrentJob.OutputName}" Tag="Output file name" 
-                 Style="{StaticResource WatermarkedTextBox}"  PreviewTextInput="outputFilenameBox_TextInput" />
-        <WrapPanel Grid.Row="2" Visibility="{Binding CurrentFile, TargetNullValue=Hidden}" >
-            <TextBox Name="currentTimeEditBox" Text="{Binding ElementName=slider, Path=Value, Converter={StaticResource DoubleTimeSpanToStringConverter}}" PreviewTextInput="TimeBoxes_TextInput"/>
-            <TextBox Name="startTimeEditBox" Text="{Binding ElementName=slider, Path=SelectionStart, Converter={StaticResource DoubleTimeSpanToStringConverter}}" PreviewTextInput="TimeBoxes_TextInput"/>
-            <TextBox Name="endTimeEditBox" Text="{Binding ElementName=slider, Path=SelectionEnd, Converter={StaticResource DoubleTimeSpanToStringConverter}}" PreviewTextInput="TimeBoxes_TextInput"/>
+            Style="{StaticResource WatermarkedTextBox}"  PreviewTextInput="outputFilenameBox_TextInput" />
+        <WrapPanel Grid.Row="2" Visibility="{Binding CurrentFile, TargetNullValue=Hidden}" Width="550" Margin="0,5,0,5" >
+            <TextBlock Text="Current:" Margin="10,2,0,0"/>
+            <xctk:TimeSpanUpDown FractionalSecondsDigitsCount="3" Value="{Binding Value, Converter={StaticResource DoubleToTimeSpanConverter}, ElementName=slider}"/>
+            <TextBlock Text="Start:" Margin="10,2,0,0"/>
+            <xctk:TimeSpanUpDown FractionalSecondsDigitsCount="3" Value="{Binding SelectionStart, Converter={StaticResource DoubleToTimeSpanConverter}, ElementName=slider}"/>
+            <TextBlock Text="End:" Margin="10,2,0,0"/>
+            <xctk:TimeSpanUpDown FractionalSecondsDigitsCount="3" Value="{Binding SelectionEnd, Converter={StaticResource DoubleToTimeSpanConverter}, ElementName=slider}"/>
+            <TextBlock Text="Duration:" Margin="10,2,0,0"/>
+            <TextBlock Text="{Binding CurrentFile.Duration, StringFormat=hh\\:mm\\:ss\\.fff}"  Margin="5,2,0,0"/>
         </WrapPanel>
     </Grid>
 </Window>

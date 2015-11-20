@@ -31,9 +31,6 @@ namespace JoinerSplitter
         {
             InitializeComponent();
             DataObject.AddPastingHandler(outputFilenameBox, outputFilenameBox_Paste);
-            DataObject.AddPastingHandler(currentTimeEditBox, timeBoxes_Paste);
-            DataObject.AddPastingHandler(startTimeEditBox, timeBoxes_Paste);
-            DataObject.AddPastingHandler(endTimeEditBox, timeBoxes_Paste);
         }
 
         private void timeBoxes_Paste(object sender, DataObjectPastingEventArgs e)
@@ -49,24 +46,13 @@ namespace JoinerSplitter
 
         }
 
-        void toolBar_Loaded(object sender, RoutedEventArgs e)
-        {
-            RemoveOverflow(toolBar);
-
-        }
-
-        void RemoveOverflow(ToolBar toolBar)
+         void RemoveOverflow(ToolBar toolBar)
         {
             var overflowGrid = toolBar.Template.FindName("OverflowGrid", toolBar) as FrameworkElement;
             if (overflowGrid != null)
             {
                 overflowGrid.Visibility = Visibility.Collapsed;
             }
-        }
-
-        void filesToolBar_Loaded(object sender, RoutedEventArgs e)
-        {
-            RemoveOverflow(filesToolBar);
         }
 
         async void addButton_Click(object sender, RoutedEventArgs e)
@@ -331,5 +317,9 @@ namespace JoinerSplitter
             if (nonTimeSpanChars.IsMatch(e.Text)) e.Handled = true;
         }
 
+        private void currentTimeEditBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            e.Handled = true;
+        }
     }
 }

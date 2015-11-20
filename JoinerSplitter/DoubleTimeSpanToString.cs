@@ -12,7 +12,7 @@ namespace JoinerSplitter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var val=(double)value;
+            var val = (double)value;
             return TimeSpan.FromSeconds(val).ToString("hh\\:mm\\:ss\\.fff");
         }
 
@@ -20,6 +20,20 @@ namespace JoinerSplitter
         {
             var val = value.ToString();
             return TimeSpan.Parse(val).TotalSeconds;
+        }
+    }
+    public class DoubleToTimeSpan : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var val = (double)value;
+            return TimeSpan.FromSeconds(val);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var val = (TimeSpan)value;
+            return val.TotalSeconds;
         }
     }
 }
