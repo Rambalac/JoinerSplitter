@@ -27,7 +27,20 @@ namespace JoinerSplitter
         readonly ObservableCollection<VideoFile> files = new ObservableCollection<VideoFile>();
 
         public ObservableCollection<VideoFile> Files => files;
-        private string outputName;
+        string outputName;
+
+        public bool HasMoreGroupsThanOne => Files.Select(f => f.GroupIndex).Distinct().Count() > 1;
+
+
+        public Job()
+        {
+            files.CollectionChanged += Files_CollectionChanged;
+        }
+
+        void Files_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(HasMoreGroupsThanOne));
+        }
 
         public string OutputFolder
         {

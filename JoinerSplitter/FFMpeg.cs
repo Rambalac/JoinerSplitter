@@ -35,7 +35,7 @@ namespace JoinerSplitter
         // frame=   81 fps=0.0 q=-1.0 Lsize=   20952kB time = 00:00:03.09 bitrate=55455.1kbits/s
         readonly Regex timeExtract = new Regex(@"\s*frame\s*=\s*(?<frame>\d*)\s*fps\s*=\s*(?<fps>[\d.]*)\s*q\s*=[\d-+.]*\s*Lsize\s*=\s*(\d*\w{1,5})?\s*time\s*=\s*(?<time>\d{2}:\d{2}:\d{2}\.\d{2}).*");
 
-        private void UpdateProgress(Action<int> progress, string str, double totalSec, double done, double coof = 1)
+        void UpdateProgress(Action<int> progress, string str, double totalSec, double done, double coof = 1)
         {
             var m = timeExtract.Match(str);
             if (m.Success)
@@ -60,7 +60,7 @@ namespace JoinerSplitter
 
         }
 
-        private async Task CutOneFile(VideoFile file, string filePath, double done, double totalSec, Action<int> progress)
+        async Task CutOneFile(VideoFile file, string filePath, double done, double totalSec, Action<int> progress)
         {
             var args = $"-ss {file.Start} -t {file.End - file.Start} -i \"{file.FilePath}\" -c copy -y \"{filePath}\"";
 
@@ -106,9 +106,9 @@ namespace JoinerSplitter
                 File.Delete(file);
         }
 
-        private async Task<string> CreateConcatFile(List<string> concatFiles)
+        async Task<string> CreateConcatFile(List<string> concatFiles)
         {
-            var result = Path.GetTempFileName()+".txt";
+            var result = Path.GetTempFileName() + ".txt";
 
             using (var writer = File.CreateText(result))
             {
@@ -119,7 +119,7 @@ namespace JoinerSplitter
             return result;
         }
 
-        private static string GetLine(ICollection<string> list)
+        static string GetLine(ICollection<string> list)
         {
             return list.Single(s => s != null && s.Trim('\r', '\n', ' ', '\t') != "").Trim('\r', '\n', ' ', '\t');
         }
@@ -140,17 +140,17 @@ namespace JoinerSplitter
             }
         }
 
-        private ProcessTask StartProcess(string command, params string[] arguments)
+        ProcessTask StartProcess(string command, params string[] arguments)
         {
             return StartProcess(command, ProcessPriorityClass.Normal, null, arguments);
         }
 
-        private ProcessTask StartProcess(string command, Action<string> progress, params string[] arguments)
+        ProcessTask StartProcess(string command, Action<string> progress, params string[] arguments)
         {
             return StartProcess(command, ProcessPriorityClass.Normal, progress, arguments);
         }
 
-        private ProcessTask StartProcess(string command, ProcessPriorityClass priorityClass, Action<string> progress, params string[] arguments)
+        ProcessTask StartProcess(string command, ProcessPriorityClass priorityClass, Action<string> progress, params string[] arguments)
         {
             var proc = new Process
             {

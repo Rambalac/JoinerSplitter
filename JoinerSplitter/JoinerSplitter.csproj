@@ -57,6 +57,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DoubleTimeSpanToString.cs" />
     <Compile Include="ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
     </Compile>
@@ -118,6 +119,24 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\Split.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\AddMark_10580_inverse.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\arrow_Down_16xLG.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\arrow_Up_16xLG.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\Copy_6524.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\action_Cancel_16xLG.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\Cut_6523.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -12,13 +12,13 @@ namespace JoinerSplitter
     public class VideoFile : INotifyPropertyChanged
     {
 
-        private string filePath;
+        string filePath;
         public string FileName => Path.GetFileName(FilePath);
-        private TimeSpan duration;
+        TimeSpan duration;
 
-        private int groupIndex;
-        private TimeSpan start;
-        private TimeSpan end;
+        int groupIndex;
+        TimeSpan start;
+        TimeSpan end;
 
         public TimeSpan CutDuration => End - Start;
 
@@ -117,6 +117,15 @@ namespace JoinerSplitter
         public VideoFile(string path)
         {
             FilePath = path;
+        }
+
+        public VideoFile(VideoFile video)
+        {
+            filePath = video.filePath;
+            duration = video.Duration;
+            start = video.start;
+            end = video.end;
+            groupIndex = video.groupIndex;
         }
 
         protected virtual void OnPropertyChanged(string e)

@@ -6,7 +6,7 @@ namespace JoinerSplitter
     public class AppModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        private Job currentJob;
+        Job currentJob;
 
         public VideoFile CurrentFile
         {
@@ -39,13 +39,13 @@ namespace JoinerSplitter
             }
         }
 
-        private VideoFile currentFile;
+        VideoFile currentFile;
 
         public AppModel()
         {
             CurrentJob = new Job();
         }
-        private void OnPropertyChanged(string propertyName)
+        void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
