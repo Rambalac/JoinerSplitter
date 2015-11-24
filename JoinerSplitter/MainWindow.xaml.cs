@@ -57,20 +57,35 @@ namespace JoinerSplitter
             }
         }
 
+        readonly static string[] allowedExtensions = { "mov", "mp4", "avi", "wmv", "mkv" };
+        readonly static string dialogFilterString = $"Video files ({string.Join(", ", allowedExtensions)})|{string.Join(";", allowedExtensions.Select(s => "*." + s))}";
+        readonly static HashSet<string> allowedExtensionsWithDot = new HashSet<string>(allowedExtensions.Select(f => "." + f));
         async void addButton_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new OpenFileDialog { Filter = "Video files (mov, mp4, avi, wmv, mkv)|*.mov;*.mp4;*.avi;*.wmv;*.mkv", Multiselect = true };
+            var dlg = new OpenFileDialog { Filter = dialogFilterString, Multiselect = true };
             var result = dlg.ShowDialog();
             if (result == false) return;
+            await addFiles(dlg.FileNames);
+        }
 
+        async Task addFiles(string[] files, VideoFile before = null, int groupIndex = -1)
+        {
             var ffmpeg = new FFMpeg();
             var Error = new List<String>();
-            foreach (var file in dlg.FileNames.Select(p => new VideoFile(p)))
+            var lastFile = DataContext.CurrentJob.Files.LastOrDefault();
+            var beforeIndex = before != null ? DataContext.CurrentJob.Files.IndexOf(before) : -1;
+            foreach (var file in files.Select(p => new VideoFile(p)))
             {
                 try
                 {
                     file.End = file.Duration = await ffmpeg.GetDuration(file.FilePath);
-                    DataContext.CurrentJob.Files.Add(file);
+                    file.GroupIndex = (groupIndex >= 0) ? groupIndex : lastFile?.GroupIndex ?? 0;
+                    if (before == null)
+                        DataContext.CurrentJob.Files.Add(file);
+                    else
+                    {
+                        DataContext.CurrentJob.Files.Insert(beforeIndex, file);
+                    }
                 }
                 catch (Exception)
                 {
@@ -79,7 +94,7 @@ namespace JoinerSplitter
             }
             if (Error.Any())
             {
-                if (dlg.FileNames.Length == Error.Count)
+                if (files.Length == Error.Count)
                 {
                     MessageBox.Show("None of files can be exported by ffmpeg:\r\n" + string.Join("\r\n", Error.Select(s => "  " + s)),
                         "File format error");
@@ -90,8 +105,8 @@ namespace JoinerSplitter
                 }
             }
 
-            if (string.IsNullOrEmpty(DataContext.CurrentJob.OutputName) && dlg.FileNames.Length > 0)
-                DataContext.CurrentJob.OutputName = System.IO.Path.GetFileNameWithoutExtension(dlg.FileNames[0]) + ".out" + System.IO.Path.GetExtension(dlg.FileNames[0]);
+            if (string.IsNullOrEmpty(DataContext.CurrentJob.OutputName) && files.Length > 0)
+                DataContext.CurrentJob.OutputName = System.IO.Path.GetFileNameWithoutExtension(files[0]) + ".out" + System.IO.Path.GetExtension(files[0]);
         }
 
         void Button_SelStart(object sender, RoutedEventArgs e)
@@ -359,6 +374,60 @@ namespace JoinerSplitter
         private void currentTimeEditBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             e.Handled = true;
+        }
+
+        private void filesList_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.None;
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files.Any(f => allowedExtensionsWithDot.Contains(System.IO.Path.GetExtension(f)))) e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
+            }
+        }
+
+        public static ContentControl GetItemAt(ListView listView, Point point)
+        {
+            var hitTestResult = VisualTreeHelper.HitTest(listView, point);
+            var item = hitTestResult.VisualHit;
+            while (item != null)
+            {
+                if (item is ListViewItem) return (ContentControl)item;
+                if (item is GroupItem) return (ContentControl)item;
+                item = VisualTreeHelper.GetParent(item);
+            }
+            return null;
+        }
+
+        private async void filesList_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                var result = GetItemAt(filesList, e.GetPosition(filesList));
+                if (result == null)
+                {
+                    await addFiles(files);
+                    return;
+                }
+
+                var listItem = result as ListViewItem;
+                if (listItem != null)
+                {
+                    var item = listItem.Content as VideoFile;
+                    await addFiles(files, item, item.GroupIndex);
+                    return;
+                }
+
+                var group = result as GroupItem;
+                if (group == null) return;
+
+                var items = (group.Content as CollectionViewGroup).Items;
+                var before = items.FirstOrDefault() as VideoFile;
+                var groupIndex = before.GroupIndex - 1;
+                if (groupIndex < 0) groupIndex = 0;
+                await addFiles(files, before, groupIndex);
+            }
         }
     }
 }
