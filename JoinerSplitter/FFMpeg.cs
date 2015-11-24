@@ -34,15 +34,15 @@ namespace JoinerSplitter
         }
 
         // frame=   81 fps=0.0 q=-1.0 Lsize=   20952kB time = 00:00:03.09 bitrate=55455.1kbits/s
-        readonly Regex timeExtract = new Regex(@"\s*frame\s*=\s*(?<frame>\d*)\s*fps\s*=\s*(?<fps>[\d.]*)\s*q\s*=[\d-+.]*\s*(L)?size\s*=\s*(\d*\w{1,5})?\s*time\s*=\s*(?<time>\d{2}:\d{2}:\d{2}\.\d{2}).*");
+        readonly static Regex timeExtract = new Regex(@"\s*frame\s*=\s*(?<frame>\d*)\s*fps\s*=\s*(?<fps>[\d.]*)\s*q\s*=[\d-+.]*\s*(L)?size\s*=\s*(\d*\w{1,5})?\s*time\s*=\s*(?<time>\d{2}:\d{2}:\d{2}\.\d{2}).*");
 
-        void UpdateProgress(Action<int> progress, string str, double totalSec, double done, double coof = 1)
+        void UpdateProgress(Action<int> progress, string str, double totalSec, double done, double coef = 1)
         {
             var m = timeExtract.Match(str);
             if (m.Success)
             {
                 var time = TimeSpan.Parse(m.Groups["time"].Value, CultureInfo.InvariantCulture).TotalSeconds;
-                progress?.Invoke((int)((done + time * coof) * 100 / (2 * totalSec)));
+                progress?.Invoke((int)((done + time * coef) * 100 / (2 * totalSec)));
             }
 
         }
@@ -50,7 +50,11 @@ namespace JoinerSplitter
         {
             var totalSec = job.Files.Sum(f => f.Duration.TotalSeconds);
             double done = 0;
-            foreach (var step in job.FileGroups)
+            var groups = job.FileGroups.ToList();
+            var error = groups.Join(job.Files, g => g.FilePath, f => f.FilePath, (g, f) => g.FilePath);
+            if (error.Any()) throw new ArgumentException("Some output file names are the same as one of inputs:\r\n" + string.Join("\r\n", error.Select(s => "  " + s)));
+
+            foreach (var step in groups)
             {
                 if (step.Files.Count() > 1)
                     await ConcatMultipleFiles(step, done, totalSec, progress);
@@ -63,7 +67,7 @@ namespace JoinerSplitter
 
         async Task CutOneFile(VideoFile file, string filePath, double done, double totalSec, Action<int> progress)
         {
-            var args = $"-ss {file.Start} -t {file.End - file.Start} -i \"{file.FilePath}\" -c copy -y \"{filePath}\"";
+            var args = $"-ss {file.Start} -t {file.CutDuration} -i \"{file.FilePath}\" -c copy -y \"{filePath}\"";
 
             var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done, 2), args);
 
@@ -85,13 +89,13 @@ namespace JoinerSplitter
                 {
                     var newfile = Path.GetTempFileName() + Path.GetExtension(file.FilePath);
 
-                    var tempargs = $"-ss {file.Start} -t {file.End - file.Start} -i \"{file.FilePath}\" -c copy -y \"{newfile}\"";
+                    var tempargs = $"-ss {file.Start} -t {file.CutDuration} -i \"{file.FilePath}\" -c copy -y \"{newfile}\"";
 
                     var tempproc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done), tempargs);
 
                     await tempproc.Task;
 
-                    done += (file.End - file.Start).TotalSeconds;
+                    done += file.CutDuration.TotalSeconds;
                     concatFiles.Add(newfile);
                     filesToDelete.Add(newfile);
                 }

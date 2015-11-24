@@ -64,11 +64,32 @@ namespace JoinerSplitter
             if (result == false) return;
 
             var ffmpeg = new FFMpeg();
+            var Error = new List<String>();
             foreach (var file in dlg.FileNames.Select(p => new VideoFile(p)))
             {
-                file.End = file.Duration = await ffmpeg.GetDuration(file.FilePath);
-                DataContext.CurrentJob.Files.Add(file);
+                try
+                {
+                    file.End = file.Duration = await ffmpeg.GetDuration(file.FilePath);
+                    DataContext.CurrentJob.Files.Add(file);
+                }
+                catch (Exception)
+                {
+                    Error.Add(file.FileName);
+                }
             }
+            if (Error.Any())
+            {
+                if (dlg.FileNames.Length == Error.Count)
+                {
+                    MessageBox.Show("None of files can be exported by ffmpeg:\r\n" + string.Join("\r\n", Error.Select(s => "  " + s)),
+                        "File format error");
+                }
+                else
+                {
+                    MessageBox.Show("Some files can not be exported by ffmpeg:\r\n" + string.Join("\r\n", Error.Select(s => "  " + s)), "File format error");
+                }
+            }
+
             if (string.IsNullOrEmpty(DataContext.CurrentJob.OutputName) && dlg.FileNames.Length > 0)
                 DataContext.CurrentJob.OutputName = System.IO.Path.GetFileNameWithoutExtension(dlg.FileNames[0]) + ".out" + System.IO.Path.GetExtension(dlg.FileNames[0]);
         }
@@ -172,15 +193,24 @@ namespace JoinerSplitter
             var progress = new ProgressWindow();
             progress.Show();
             var ffmpeg = new FFMpeg();
-            await ffmpeg.DoJob(job, (p) =>
+            try
             {
-                Dispatcher.Invoke(() =>
+                await ffmpeg.DoJob(job, (p) =>
                 {
-                    progress.progress.Value = p;
+                    Dispatcher.Invoke(() =>
+                    {
+                        progress.progress.Value = p;
+                    });
                 });
-            });
-
-            progress.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Processing failed");
+            }
+            finally
+            {
+                progress.Close();
+            }
         }
 
         void outputFolderBox_MouseDown(object sender, MouseButtonEventArgs e)
