@@ -63,6 +63,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DoubleTimeSpanToString.cs" />
+    <Compile Include="ListViewInsertMarkAdorner.xaml.cs" >
+		<DependentUpon>ListViewInsertMarkAdorner.xaml</DependentUpon>
+		<SubType>Code</SubType>
+	</Compile>
     <Compile Include="ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
     </Compile>
@@ -83,6 +87,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="ProgressWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ListViewInsertMarkAdorner.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

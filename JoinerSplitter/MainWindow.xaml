@@ -107,7 +107,11 @@
             </Button>
 
         </StackPanel>
-        <ListView x:Name="filesList" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="1"  ItemsSource="{Binding Source={StaticResource files}}" d:DataContext="{d:DesignInstance {x:Type local:VideoFile}}" SelectionChanged="outputList_SelectionChanged" DragEnter="filesList_DragOver" DragOver="filesList_DragOver" Drop="filesList_Drop" AllowDrop="True">
+        <ListView 
+            x:Name="filesList" Grid.Column="2" Grid.Row="1"  
+            ItemsSource="{Binding Source={StaticResource files}}" d:DataContext="{d:DesignInstance {x:Type local:VideoFile}}" 
+            SelectionChanged="outputList_SelectionChanged" DragEnter="filesList_DragEnter" DragOver="filesList_DragOver" Drop="filesList_Drop"
+            AllowDrop="True" DragLeave="filesList_DragLeave" >
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Original File" Width="110" DisplayMemberBinding="{Binding FileName}"/>
@@ -115,6 +119,7 @@
                     <GridViewColumn Header="End" Width="80" DisplayMemberBinding="{Binding End, StringFormat=hh\\:mm\\:ss\\.fff}"/>
                 </GridView>
             </ListView.View>
+
             <ListView.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>
