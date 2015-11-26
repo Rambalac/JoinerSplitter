@@ -2,10 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
-using System.Text;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,9 +16,6 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace JoinerSplitter
 {
@@ -60,7 +58,7 @@ namespace JoinerSplitter
         readonly static string[] allowedExtensions = { "mov", "mp4", "avi", "wmv", "mkv" };
         readonly static string dialogFilterString = $"Video files ({string.Join(", ", allowedExtensions)})|{string.Join(";", allowedExtensions.Select(s => "*." + s))}";
         readonly static HashSet<string> allowedExtensionsWithDot = new HashSet<string>(allowedExtensions.Select(f => "." + f));
-        async void addButton_Click(object sender, RoutedEventArgs e)
+        async void Button_AddVideo(object sender, RoutedEventArgs e)
         {
             var dlg = new OpenFileDialog { Filter = dialogFilterString, Multiselect = true };
             var result = dlg.ShowDialog();
@@ -91,20 +89,29 @@ namespace JoinerSplitter
                 file.GroupIndex = groupIndex;
             }
             NormalizeGroups();
+            RefreshList();
+        }
+
+        async Task<VideoFile> CreateVideoFileObject(string path)
+        {
+            var duration = await FFMpeg.GetInstance().GetDuration(path);
+            var keyFrames = await FFMpeg.GetInstance().GetKeyFrames(path);
+            return new VideoFile(path, duration, keyFrames);
         }
 
         async Task addFiles(string[] files, VideoFile before = null, int groupIndex = -1)
         {
-            var ffmpeg = new FFMpeg();
+            var infobox = InfoBox.Show(this, "Retrieving video files details...");
+
             var Error = new List<String>();
             var lastFile = DataContext.CurrentJob.Files.LastOrDefault();
             var beforeIndex = before != null ? DataContext.CurrentJob.Files.IndexOf(before) : -1;
             if (groupIndex < 0) groupIndex = lastFile?.GroupIndex ?? 0;
-            foreach (var file in files.Select(p => new VideoFile(p)))
+            foreach (var filepath in files)
             {
                 try
                 {
-                    file.End = file.Duration = await ffmpeg.GetDuration(file.FilePath);
+                    var file = await CreateVideoFileObject(filepath);
                     file.GroupIndex = groupIndex;
                     if (before == null)
                         DataContext.CurrentJob.Files.Add(file);
@@ -115,7 +122,7 @@ namespace JoinerSplitter
                 }
                 catch (Exception)
                 {
-                    Error.Add(file.FileName);
+                    Error.Add(Path.GetFileName(filepath));
                 }
             }
             if (Error.Any())
@@ -132,7 +139,9 @@ namespace JoinerSplitter
             }
 
             if (string.IsNullOrEmpty(DataContext.CurrentJob.OutputName) && files.Length > 0)
-                DataContext.CurrentJob.OutputName = System.IO.Path.GetFileNameWithoutExtension(files[0]) + ".out" + System.IO.Path.GetExtension(files[0]);
+                DataContext.CurrentJob.OutputName = Path.GetFileNameWithoutExtension(files[0]) + ".out" + Path.GetExtension(files[0]);
+
+            infobox.Close();
         }
 
         void Button_SelStart(object sender, RoutedEventArgs e)
@@ -219,7 +228,7 @@ namespace JoinerSplitter
             {
                 var output = filesList.SelectedItem as VideoFile;
                 OpenVideo(output);
-                storyboard.Seek(mainGrid, output.Start, TimeSeekOrigin.BeginTime);
+                storyboard.Seek(mainGrid, TimeSpan.FromSeconds(output.Start), TimeSeekOrigin.BeginTime);
             }
             else
             {
@@ -231,12 +240,11 @@ namespace JoinerSplitter
         async void processButton_Click(object sender, RoutedEventArgs e)
         {
             var job = DataContext.CurrentJob;
-            var progress = new ProgressWindow();
-            progress.Show();
-            var ffmpeg = new FFMpeg();
+            var progress = ProgressWindow.Show(this);
+
             try
             {
-                await ffmpeg.DoJob(job, (p) =>
+                await FFMpeg.GetInstance().DoJob(job, (p) =>
                 {
                     Dispatcher.Invoke(() =>
                     {
@@ -277,16 +285,19 @@ namespace JoinerSplitter
 
         void splitButton_Click(object sender, RoutedEventArgs e)
         {
-            var currentIndex = DataContext.CurrentJob.Files.IndexOf(DataContext.CurrentFile);
-            var currentTime = TimeSpan.FromSeconds(slider.Value);
-            var newFile = new VideoFile(DataContext.CurrentFile.FilePath)
+            var curFile = DataContext.CurrentFile;
+            var currentIndex = DataContext.CurrentJob.Files.IndexOf(curFile);
+            var currentTime = slider.Value;
+            var splitTime = curFile.KeyFrames.Where(f => f > currentTime).DefaultIfEmpty(curFile.Duration).First();
+            if (splitTime <= curFile.Start || splitTime >= curFile.End) return;
+
+            var newFile = new VideoFile(curFile)
             {
-                Duration = DataContext.CurrentFile.Duration,
-                Start = currentTime,
-                End = DataContext.CurrentFile.End,
-                GroupIndex = DataContext.CurrentFile.GroupIndex + 1
+                Start = splitTime+0.1,
+                GroupIndex = curFile.GroupIndex + 1
             };
-            DataContext.CurrentFile.End = currentTime;
+
+            curFile.End = splitTime - 0.1;
             DataContext.CurrentJob.Files.Insert(currentIndex + 1, newFile);
             for (var i = currentIndex + 2; i < DataContext.CurrentJob.Files.Count; i++)
                 DataContext.CurrentJob.Files[i].GroupIndex += 1;
@@ -535,7 +546,7 @@ namespace JoinerSplitter
 
             if (e.LeftButton == MouseButtonState.Pressed && dragStartPoint != null)
             {
-                Vector drag = (Vector)(e.GetPosition(null) - dragStartPoint);
+                var drag = (Vector)(e.GetPosition(null) - dragStartPoint);
                 if (drag.X > SystemParameters.MinimumHorizontalDragDistance || drag.Y > SystemParameters.MinimumVerticalDragDistance)
                 {
                     DragDrop.DoDragDrop(filesList, selected, DragDropEffects.Move);
@@ -550,6 +561,88 @@ namespace JoinerSplitter
         {
             selected = null;
             dragStartPoint = null;
+        }
+
+        private void SaveJobAs(object sender = null, RoutedEventArgs e = null)
+        {
+            var dlg = new SaveFileDialog
+            {
+                Filter = "JoinerSplitter job file (*.jsj)|*.jsj",
+                DefaultExt = ".jsj",
+                OverwritePrompt = true
+            };
+            if (!string.IsNullOrWhiteSpace(DataContext.CurrentJob.JobFilePath))
+            {
+                dlg.FileName = Path.GetFileNameWithoutExtension(DataContext.CurrentJob.JobFilePath);
+                dlg.InitialDirectory = Path.GetDirectoryName(DataContext.CurrentJob.JobFilePath);
+            }
+            var result = dlg.ShowDialog();
+            if (result == false) return;
+
+            SaveJob(dlg.FileName);
+        }
+
+        void SaveJob(string path)
+        {
+            using (var stream = File.Create(path))
+            {
+                var ser = new DataContractJsonSerializer(typeof(Job));
+                ser.WriteObject(stream, DataContext.CurrentJob);
+            }
+        }
+
+        async Task OpenJob(string path)
+        {
+
+            using (var stream = File.OpenRead(path))
+            {
+                Environment.CurrentDirectory = Path.GetDirectoryName(path);
+                var ser = new DataContractJsonSerializer(typeof(Job));
+                try
+                {
+                    DataContext.CurrentJob = await Task.Run(() =>
+                      {
+                          var result = (Job)ser.ReadObject(stream);
+                          result.JobFilePath = path;
+                          return result;
+                      });
+                }
+                catch (SerializationException ex)
+                {
+                    MessageBox.Show(this, ex.Message, "Can not open Job");
+                }
+            }
+        }
+
+        private async void OpenJob(object sender, RoutedEventArgs e)
+        {
+            var dlg = new OpenFileDialog
+            {
+                Filter = "JoinerSplitter job file (*.jsj)|*.jsj",
+                DefaultExt = ".jsj",
+                Multiselect = false
+            };
+
+            var result = dlg.ShowDialog();
+            if (result == false) return;
+
+            var infobox = InfoBox.Show(this, "Retrieving video files details...");
+            await OpenJob(dlg.FileName);
+            infobox.Close();
+        }
+
+        private void SaveJob(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(DataContext.CurrentJob.JobFilePath))
+                SaveJobAs();
+            else
+                SaveJob(DataContext.CurrentJob.JobFilePath);
+        }
+
+        private void NewJob(object sender, RoutedEventArgs e)
+        {
+            DataContext.CurrentJob = new Job();
+            DataContext.CurrentFile = null;
         }
     }
 }

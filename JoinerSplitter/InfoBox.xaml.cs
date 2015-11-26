@@ -3,17 +3,18 @@
 namespace JoinerSplitter
 {
     /// <summary>
-    /// Interaction logic for ProgressWindow.xaml
+    /// Interaction logic for InfoBox.xaml
     /// </summary>
-    partial class ProgressWindow : Window
+    public partial class InfoBox : Window
     {
-        ProgressWindow()
+        InfoBox()
         {
             InitializeComponent();
         }
-        public static ProgressWindow Show(Window owner)
+        public static InfoBox Show(Window owner, string text)
         {
-            var dlg = new ProgressWindow();
+            var dlg = new InfoBox();
+            dlg.textBlock.Text = text;
             dlg.Owner = owner;
             dlg.Show();
             return dlg;

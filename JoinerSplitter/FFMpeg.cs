@@ -4,18 +4,45 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static System.FormattableString;
 
 namespace JoinerSplitter
 {
     public class FFMpeg
     {
+        FFMpeg()
+        {
+
+        }
+
+        public static FFMpeg Instance { get; set; } = new FFMpeg();
+        public static FFMpeg GetInstance() => Instance;
+
         public string FFMpegPath { get; set; } = "ffmpeg.exe";
         public string FFProbePath { get; set; } = "ffprobe.exe";
 
-        public async Task<TimeSpan> GetDuration(string filePath)
+        public async Task<List<double>> GetKeyFrames(string filePath)
+        {
+            var proc = StartProcess(FFProbePath, -1, "-v error -select_streams v -show_frames -show_entries frame=key_frame,pkt_pts_time -of csv", $"\"{filePath}\"");
+            await proc.Task;
+
+            try
+            {
+                var lines = GetLines(proc.ResultLines);
+                var result = lines.Where(s => s.StartsWith("frame,1", StringComparison.InvariantCulture))
+                    .Select(s => double.Parse(s.Substring(8), CultureInfo.InvariantCulture)).ToList();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Wrong ffprobe result: " + string.Join("\r\n", proc.ResultLines), ex);
+            }
+        }
+
+        public async Task<double> GetDuration(string filePath)
         {
             var proc = StartProcess(FFProbePath, "-v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1", $"\"{filePath}\"");
             await proc.Task;
@@ -25,7 +52,7 @@ namespace JoinerSplitter
                 var line = GetLine(proc.ResultLines);
                 var result = double.Parse(line, CultureInfo.InvariantCulture);
 
-                return TimeSpan.FromSeconds(result);
+                return result;
             }
             catch (Exception ex)
             {
@@ -48,7 +75,7 @@ namespace JoinerSplitter
         }
         public async Task DoJob(Job job, Action<int> progress = null)
         {
-            var totalSec = job.Files.Sum(f => f.Duration.TotalSeconds);
+            var totalSec = job.Files.Sum(f => f.Duration);
             double done = 0;
             var groups = job.FileGroups.ToList();
             var error = groups.Join(job.Files, g => g.FilePath, f => f.FilePath, (g, f) => g.FilePath);
@@ -60,14 +87,15 @@ namespace JoinerSplitter
                     await ConcatMultipleFiles(step, done, totalSec, progress);
                 else
                     await CutOneFile(step.Files.Single(), step.FilePath, done, totalSec, progress);
-                done += step.Files.Sum(f => f.CutDuration.TotalSeconds);
+                done += step.Files.Sum(f => f.CutDuration);
             }
 
         }
 
         async Task CutOneFile(VideoFile file, string filePath, double done, double totalSec, Action<int> progress)
         {
-            var args = $"-ss {file.Start} -t {file.CutDuration} -i \"{file.FilePath}\" -c copy -y \"{filePath}\"";
+            var args = Invariant($"-ss {file.Start} -t {file.CutDuration} -i \"{file.FilePath}\" -c copy -y \"{filePath}\"");
+            Debug.WriteLine(args);
 
             var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done, 2), args);
 
@@ -80,22 +108,22 @@ namespace JoinerSplitter
             var concatFiles = new List<string>();
             var filesToDelete = new List<string>();
             foreach (var file in step.Files)
-                if (file.CutDuration == file.Duration)
+                if (Math.Abs(file.CutDuration - file.Duration) < 0.0001)
                 {
                     concatFiles.Add(file.FilePath);
-                    done += file.Duration.TotalSeconds;
+                    done += file.Duration;
                 }
                 else
                 {
                     var newfile = Path.GetTempFileName() + Path.GetExtension(file.FilePath);
 
-                    var tempargs = $"-ss {file.Start} -t {file.CutDuration} -i \"{file.FilePath}\" -c copy -y \"{newfile}\"";
-
+                    var tempargs = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{newfile}\"");
+                    Debug.WriteLine(tempargs);
                     var tempproc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done), tempargs);
 
                     await tempproc.Task;
 
-                    done += file.CutDuration.TotalSeconds;
+                    done += file.CutDuration;
                     concatFiles.Add(newfile);
                     filesToDelete.Add(newfile);
                 }
@@ -129,17 +157,28 @@ namespace JoinerSplitter
             return list.Single(s => s != null && s.Trim('\r', '\n', ' ', '\t') != "").Trim('\r', '\n', ' ', '\t');
         }
 
+        static IEnumerable<string> GetLines(ICollection<string> list)
+        {
+            return list.Where(s => s != null).Select(s => s.Trim('\r', '\n', ' ', '\t')).Where(s => !string.IsNullOrWhiteSpace(s));
+        }
+
+
+        class ProcessTaskParams
+        {
+            public int ErrorLinesLimit = 10;
+            public int ResultLinesLimit = 10;
+        }
         class ProcessTask
         {
+            public ProcessTaskParams parameters;
             public LinkedList<string> ErrorLines = new LinkedList<string>();
-            public int ErrorLinesLimit = 10;
             public LinkedList<string> ResultLines = new LinkedList<string>();
-            public int ResultLinesLimit = 10;
             public Process Process;
             public Task Task;
 
-            public ProcessTask(Process proc, Task t)
+            public ProcessTask(Process proc, Task t, ProcessTaskParams parameters)
             {
+                this.parameters = parameters;
                 Process = proc;
                 Task = t;
             }
@@ -147,15 +186,22 @@ namespace JoinerSplitter
 
         ProcessTask StartProcess(string command, params string[] arguments)
         {
-            return StartProcess(command, ProcessPriorityClass.Normal, null, arguments);
+            return StartProcess(command, ProcessPriorityClass.Normal, new ProcessTaskParams(), null, arguments);
         }
 
         ProcessTask StartProcess(string command, Action<string> progress, params string[] arguments)
         {
-            return StartProcess(command, ProcessPriorityClass.Normal, progress, arguments);
+            return StartProcess(command, ProcessPriorityClass.Normal, new ProcessTaskParams(), progress, arguments);
         }
 
-        ProcessTask StartProcess(string command, ProcessPriorityClass priorityClass, Action<string> progress, params string[] arguments)
+        ProcessTask StartProcess(string command, int resultLimit, params string[] arguments)
+        {
+            var pars = new ProcessTaskParams { ResultLinesLimit = resultLimit };
+
+            return StartProcess(command, ProcessPriorityClass.Normal, pars, null, arguments);
+        }
+
+        ProcessTask StartProcess(string command, ProcessPriorityClass priorityClass, ProcessTaskParams parameters, Action<string> progress, params string[] arguments)
         {
             var proc = new Process
             {
@@ -174,7 +220,7 @@ namespace JoinerSplitter
             };
 
             var exited = new TaskCompletionSource<bool>();
-            var result = new ProcessTask(proc, exited.Task);
+            var result = new ProcessTask(proc, exited.Task, parameters);
 
             proc.Exited += (sender, args) =>
             {
@@ -191,7 +237,7 @@ namespace JoinerSplitter
             proc.ErrorDataReceived += (sender, args) =>
             {
                 result.ErrorLines.AddLast(args.Data);
-                if (result.ErrorLines.Count > result.ErrorLinesLimit) result.ErrorLines.RemoveFirst();
+                if (result.parameters.ErrorLinesLimit != -1 && result.ErrorLines.Count > result.parameters.ErrorLinesLimit) result.ErrorLines.RemoveFirst();
 
                 if (!string.IsNullOrWhiteSpace(args.Data))
                     progress?.Invoke(args.Data);
@@ -199,7 +245,7 @@ namespace JoinerSplitter
             proc.OutputDataReceived += (sender, args) =>
             {
                 result.ResultLines.AddLast(args.Data);
-                if (result.ResultLines.Count > result.ResultLinesLimit) result.ResultLines.RemoveFirst();
+                if (result.parameters.ResultLinesLimit != -1 && result.ResultLines.Count > result.parameters.ResultLinesLimit) result.ResultLines.RemoveFirst();
             };
 
             proc.Start();

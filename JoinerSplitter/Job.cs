@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Serialization;
 
 namespace JoinerSplitter
 {
-
+    [DataContract]
     public class Job : INotifyPropertyChanged
     {
         public class FilesGroup
@@ -24,9 +22,17 @@ namespace JoinerSplitter
             }
         }
 
+        public string JobFilePath { get; set; } = "";
+
+        [DataMember]
         readonly ObservableCollection<VideoFile> files = new ObservableCollection<VideoFile>();
 
         public ObservableCollection<VideoFile> Files => files;
+
+        [DataMember]
+        private string outputFolder;
+
+        [DataMember]
         string outputName;
 
         public bool HasMoreGroupsThanOne => Files.Select(f => f.GroupIndex).Distinct().Count() > 1;
@@ -81,7 +87,6 @@ namespace JoinerSplitter
                 return Files.GroupBy(f => f.GroupIndex, (k, f) => new FilesGroup(Path.Combine(folder, $"{noext}_{k}{ext}"), f.ToList())).ToList();
             }
         }
-        private string outputFolder;
 
         private void OnPropertyChanged(string propertyName)
         {

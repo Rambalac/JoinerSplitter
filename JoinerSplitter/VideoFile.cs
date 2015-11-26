@@ -1,58 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Serialization;
 
 namespace JoinerSplitter
 {
+    [DataContract]
     public class VideoFile : INotifyPropertyChanged
     {
-
+        [DataMember]
         string filePath;
-        public string FileName => Path.GetFileName(FilePath);
-        TimeSpan duration;
 
+        [DataMember]
         int groupIndex;
-        TimeSpan start;
-        TimeSpan end;
 
-        public TimeSpan CutDuration => End - Start;
+        [DataMember]
+        double start;
 
+        [DataMember]
+        double end;
+
+        List<double> keyFrames;
+
+        double duration;
+
+        public List<double> KeyFrames => keyFrames;
+        public string FileName => Path.GetFileName(FilePath);
+        public double CutDuration => End - Start;
         public Uri FileUri => new Uri(FilePath);
 
-        public string FilePath
-        {
-            get
-            {
-                return filePath;
-            }
+        public string FilePath => filePath;
 
-            set
-            {
-                filePath = value;
-                OnPropertyChanged(nameof(FilePath));
-            }
-        }
+        public double Duration => duration;
 
-        public TimeSpan Duration
-        {
-            get
-            {
-                return duration;
-            }
-
-            set
-            {
-                duration = value;
-                OnPropertyChanged(nameof(Duration));
-            }
-        }
-
-        public TimeSpan Start
+        public double Start
         {
             get
             {
@@ -63,11 +46,10 @@ namespace JoinerSplitter
             {
                 start = value;
                 OnPropertyChanged(nameof(Start));
-                OnPropertyChanged(nameof(StartSeconds));
             }
         }
 
-        public TimeSpan End
+        public double End
         {
             get
             {
@@ -78,22 +60,7 @@ namespace JoinerSplitter
             {
                 end = value;
                 OnPropertyChanged(nameof(End));
-                OnPropertyChanged(nameof(EndSeconds));
             }
-        }
-
-        public double StartSeconds
-        {
-            get { return start.TotalSeconds; }
-
-            set { Start = TimeSpan.FromSeconds(value); }
-        }
-
-        public double EndSeconds
-        {
-            get { return end.TotalSeconds; }
-
-            set { End = TimeSpan.FromSeconds(value); }
         }
 
         public int GroupIndex
@@ -114,15 +81,18 @@ namespace JoinerSplitter
         {
 
         }
-        public VideoFile(string path)
+        public VideoFile(string path, double duration, List<double> keyFrames)
         {
-            FilePath = path;
+            filePath = path;
+            this.duration = end = duration;
+            this.keyFrames = keyFrames;
         }
 
         public VideoFile(VideoFile video)
         {
             filePath = video.filePath;
             duration = video.Duration;
+            keyFrames = video.keyFrames;
             start = video.start;
             end = video.end;
             groupIndex = video.groupIndex;
@@ -134,5 +104,21 @@ namespace JoinerSplitter
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        [OnDeserialized]
+        void OnDeserialized(StreamingContext context)
+        {
+            if (!File.Exists(filePath))
+            {
+                var testPath = Path.GetFileName(filePath);
+                if (File.Exists(testPath))
+                {
+                    filePath = testPath;
+                }
+                else throw new SerializationException("Video file used in job does not exist");
+            }
+            duration = FFMpeg.GetInstance().GetDuration(filePath).Result;
+            keyFrames = FFMpeg.GetInstance().GetKeyFrames(filePath).Result;
+        }
     }
 }

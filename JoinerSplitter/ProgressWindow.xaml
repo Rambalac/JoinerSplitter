@@ -5,14 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JoinerSplitter"
         mc:Ignorable="d"
-        Title="Progress" Height="74" Width="362" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Topmost="True">
-    <Grid >
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <ProgressBar x:Name="progress" Margin="10,10,0,10"/>
-        <Button x:Name="cancelButton" Content="Cancel" Margin="10" Grid.Column="1" Padding="10,1"/>
-
-    </Grid>
+        Title="Progress" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" ShowInTaskbar="False" Topmost="True" WindowStyle="None">
+    <Border Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1">
+        <Grid >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ProgressBar Width="300" x:Name="progress" Margin="10,10,0,10"/>
+            <Button x:Name="cancelButton" Content="Cancel" Margin="10" Grid.Column="1" Padding="10,1"/>
+        </Grid>
+    </Border>
 </Window>
