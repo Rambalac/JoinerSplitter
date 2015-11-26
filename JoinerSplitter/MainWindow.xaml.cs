@@ -68,23 +68,49 @@ namespace JoinerSplitter
             await addFiles(dlg.FileNames);
         }
 
+        private void moveFiles(VideoFile[] files, VideoFile before, int groupIndex)
+        {
+            var jobFiles = DataContext.CurrentJob.Files;
+            if (before != null)
+            {
+                int ind = jobFiles.IndexOf(before);
+                while (before != null && files.Contains(before))
+                {
+                    ind++;
+                    before = (ind < jobFiles.Count) ? jobFiles[ind] : null;
+                }
+            }
+            foreach (var file in files)
+                jobFiles.Remove(file);
+            int insertIndex = (before != null) ? jobFiles.IndexOf(before) : jobFiles.Count;
+            var lastFile = jobFiles.LastOrDefault();
+            if (groupIndex < 0) groupIndex = lastFile?.GroupIndex ?? 0;
+            foreach (var file in files)
+            {
+                jobFiles.Insert(insertIndex++, file);
+                file.GroupIndex = groupIndex;
+            }
+            NormalizeGroups();
+        }
+
         async Task addFiles(string[] files, VideoFile before = null, int groupIndex = -1)
         {
             var ffmpeg = new FFMpeg();
             var Error = new List<String>();
             var lastFile = DataContext.CurrentJob.Files.LastOrDefault();
             var beforeIndex = before != null ? DataContext.CurrentJob.Files.IndexOf(before) : -1;
+            if (groupIndex < 0) groupIndex = lastFile?.GroupIndex ?? 0;
             foreach (var file in files.Select(p => new VideoFile(p)))
             {
                 try
                 {
                     file.End = file.Duration = await ffmpeg.GetDuration(file.FilePath);
-                    file.GroupIndex = (groupIndex >= 0) ? groupIndex : lastFile?.GroupIndex ?? 0;
+                    file.GroupIndex = groupIndex;
                     if (before == null)
                         DataContext.CurrentJob.Files.Add(file);
                     else
                     {
-                        DataContext.CurrentJob.Files.Insert(beforeIndex, file);
+                        DataContext.CurrentJob.Files.Insert(beforeIndex++, file);
                     }
                 }
                 catch (Exception)
@@ -376,36 +402,6 @@ namespace JoinerSplitter
             e.Handled = true;
         }
 
-        private void filesList_DragOver(object sender, DragEventArgs e)
-        {
-            e.Effects = DragDropEffects.None;
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                if (files.Any(f => allowedExtensionsWithDot.Contains(System.IO.Path.GetExtension(f)))) e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
-                if (insertAdorner != null)
-                {
-                    var control = GetItemAt(filesList, e.GetPosition(filesList));
-                    if (control != null)
-                    {
-                        insertAdorner.Offset = control.TransformToAncestor(filesList).Transform(new Point(0, -4)).Y;
-                    }
-                    else
-                    {
-                        if (filesList.Items.Count == 0)
-                        {
-                            insertAdorner.Offset = GetListViewHeaderHeight(filesList);
-                        }
-                        else
-                        {
-                            var item = filesList.ItemContainerGenerator.ContainerFromItem(filesList.Items[filesList.Items.Count - 1]) as ListViewItem;
-                            insertAdorner.Offset = item.TransformToAncestor(filesList).Transform(new Point(0, item.ActualHeight-4)).Y;
-                        }
-                    }
-                }
-            }
-        }
-
         public static double GetListViewHeaderHeight(ListView view)
         {
             return (VisualTreeHelper.GetChild(
@@ -431,54 +427,84 @@ namespace JoinerSplitter
             }
             return null;
         }
+        private void filesList_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.None;
+            if (insertAdorner != null)
+            {
+                e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
+                var control = GetItemAt(filesList, e.GetPosition(filesList));
+                if (control != null)
+                {
+                    insertAdorner.Offset = control.TransformToAncestor(filesList).Transform(new Point(0, -4)).Y;
+                }
+                else
+                {
+                    if (filesList.Items.Count == 0)
+                    {
+                        insertAdorner.Offset = GetListViewHeaderHeight(filesList);
+                    }
+                    else
+                    {
+                        var item = filesList.ItemContainerGenerator.ContainerFromItem(filesList.Items[filesList.Items.Count - 1]) as ListViewItem;
+                        insertAdorner.Offset = item.TransformToAncestor(filesList).Transform(new Point(0, item.ActualHeight - 4)).Y;
+                    }
+                }
+            }
+        }
+
+        void GetBeforeAndGroup(Point point, out VideoFile before, out int groupIndex)
+        {
+            var result = GetItemAt(filesList, point);
+            before = null;
+            groupIndex = -1;
+            if (result == null) return;
+
+            var listItem = result as ListViewItem;
+            if (listItem != null)
+            {
+                before = listItem.Content as VideoFile;
+                groupIndex = before.GroupIndex;
+                return;
+            }
+
+            var group = result as GroupItem;
+            if (group == null) return;
+
+            var items = (group.Content as CollectionViewGroup).Items;
+            before = items.FirstOrDefault() as VideoFile;
+            groupIndex = before.GroupIndex - 1;
+            if (groupIndex < 0) groupIndex = 0;
+        }
 
         private async void filesList_Drop(object sender, DragEventArgs e)
         {
-            try
+            if (insertAdorner != null)
             {
+                VideoFile before;
+                int groupIndex;
+                GetBeforeAndGroup(e.GetPosition(filesList), out before, out groupIndex);
+
                 if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 {
                     var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                    var result = GetItemAt(filesList, e.GetPosition(filesList));
-                    if (result == null)
-                    {
-                        await addFiles(files);
-                        return;
-                    }
-
-                    var listItem = result as ListViewItem;
-                    if (listItem != null)
-                    {
-                        var item = listItem.Content as VideoFile;
-                        await addFiles(files, item, item.GroupIndex);
-                        return;
-                    }
-
-                    var group = result as GroupItem;
-                    if (group == null) return;
-
-                    var items = (group.Content as CollectionViewGroup).Items;
-                    var before = items.FirstOrDefault() as VideoFile;
-                    var groupIndex = before.GroupIndex - 1;
-                    if (groupIndex < 0) groupIndex = 0;
                     await addFiles(files, before, groupIndex);
                 }
-
-            }
-            finally
-            {
-                if (insertAdorner != null)
+                else if (e.Data.GetDataPresent(typeof(VideoFile[])))
                 {
-                    AdornerLayer.GetAdornerLayer(filesList).Remove(insertAdorner);
-                    insertAdorner = null;
+                    var files = (VideoFile[])e.Data.GetData(typeof(VideoFile[]));
+                    moveFiles(files, before, groupIndex);
                 }
+
+                AdornerLayer.GetAdornerLayer(filesList).Remove(insertAdorner);
+                insertAdorner = null;
             }
         }
 
         ListViewInsertMarkAdorner insertAdorner;
         private void filesList_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) || e.Data.GetDataPresent(typeof(VideoFile[])))
             {
                 insertAdorner = new ListViewInsertMarkAdorner(filesList);
                 AdornerLayer.GetAdornerLayer(filesList).Add(insertAdorner);
@@ -492,6 +518,38 @@ namespace JoinerSplitter
                 AdornerLayer.GetAdornerLayer(filesList).Remove(insertAdorner);
                 insertAdorner = null;
             }
+        }
+
+        Point? dragStartPoint;
+        VideoFile[] selected;
+
+        private void filesList_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            dragStartPoint = e.GetPosition(null);
+            selected = filesList.SelectedItems.Cast<VideoFile>().OrderBy(f => DataContext.CurrentJob.Files.IndexOf(f)).ToArray();
+        }
+
+        private void filesList_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (selected != null) foreach (var file in selected) filesList.SelectedItems.Add(file);
+
+            if (e.LeftButton == MouseButtonState.Pressed && dragStartPoint != null)
+            {
+                Vector drag = (Vector)(e.GetPosition(null) - dragStartPoint);
+                if (drag.X > SystemParameters.MinimumHorizontalDragDistance || drag.Y > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    DragDrop.DoDragDrop(filesList, selected, DragDropEffects.Move);
+                    dragStartPoint = null;
+                    selected = null;
+                }
+
+            }
+        }
+
+        private void filesList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            selected = null;
+            dragStartPoint = null;
         }
     }
 }
