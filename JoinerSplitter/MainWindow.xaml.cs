@@ -388,7 +388,7 @@ namespace JoinerSplitter
                     var control = GetItemAt(filesList, e.GetPosition(filesList));
                     if (control != null)
                     {
-                        insertAdorner.Offset = control.TransformToAncestor(filesList).Transform(new Point(0, 0)).Y;
+                        insertAdorner.Offset = control.TransformToAncestor(filesList).Transform(new Point(0, -4)).Y;
                     }
                     else
                     {
@@ -399,7 +399,7 @@ namespace JoinerSplitter
                         else
                         {
                             var item = filesList.ItemContainerGenerator.ContainerFromItem(filesList.Items[filesList.Items.Count - 1]) as ListViewItem;
-                            insertAdorner.Offset = item.TransformToAncestor(filesList).Transform(new Point(0, item.ActualHeight)).Y;
+                            insertAdorner.Offset = item.TransformToAncestor(filesList).Transform(new Point(0, item.ActualHeight-4)).Y;
                         }
                     }
                 }

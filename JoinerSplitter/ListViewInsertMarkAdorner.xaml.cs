@@ -29,9 +29,9 @@ namespace JoinerSplitter
 
         protected override Visual GetVisualChild(int index) => view;
 
-        protected override int VisualChildrenCount => 1;
+#pragma warning disable RECS0018 // Comparison with 0
+        protected override int VisualChildrenCount => (offset == 0) ? 0 : 1;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Potential Code Quality Issues", "RECS0018:Comparison of floating point numbers with equality operator", Justification = "Comparing same assigned number")]
         public double Offset
         {
             get
@@ -48,6 +48,7 @@ namespace JoinerSplitter
                 }
             }
         }
+#pragma warning restore RECS0018 // Comparison with 0
 
         double offset;
 
