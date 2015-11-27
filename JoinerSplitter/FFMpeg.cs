@@ -25,7 +25,7 @@ namespace JoinerSplitter
 
         public async Task<List<double>> GetKeyFrames(string filePath)
         {
-            var proc = StartProcess(FFProbePath, -1, "-v error -select_streams v -show_frames -show_entries frame=key_frame,pkt_pts_time -of csv", $"\"{filePath}\"");
+            var proc = StartProcess(FFProbePath, -1, "-v error -select_streams v -show_frames -show_entries frame=key_frame,best_effort_timestamp_time -of csv", $"\"{filePath}\"");
             await proc.Task;
 
             try
@@ -94,7 +94,7 @@ namespace JoinerSplitter
 
         async Task CutOneFile(VideoFile file, string filePath, double done, double totalSec, Action<int> progress)
         {
-            var args = Invariant($"-ss {file.Start} -t {file.CutDuration} -i \"{file.FilePath}\" -c copy -y \"{filePath}\"");
+            var args = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{filePath}\"");
             Debug.WriteLine(args);
 
             var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done, 2), args);

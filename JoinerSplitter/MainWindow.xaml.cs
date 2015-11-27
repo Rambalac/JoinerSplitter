@@ -95,8 +95,15 @@ namespace JoinerSplitter
         async Task<VideoFile> CreateVideoFileObject(string path)
         {
             var duration = await FFMpeg.GetInstance().GetDuration(path);
-            var keyFrames = await FFMpeg.GetInstance().GetKeyFrames(path);
-            return new VideoFile(path, duration, keyFrames);
+            try
+            {
+                var keyFrames = await FFMpeg.GetInstance().GetKeyFrames(path);
+                return new VideoFile(path, duration, keyFrames);
+            }
+            catch (InvalidOperationException)
+            {
+                return new VideoFile(path, duration, null);
+            }
         }
 
         async Task addFiles(string[] files, VideoFile before = null, int groupIndex = -1)
@@ -146,13 +153,15 @@ namespace JoinerSplitter
 
         void Button_SelStart(object sender, RoutedEventArgs e)
         {
-            slider.SelectionStart = slider.Value;
+            var splitTime = DataContext.CurrentFile.KeyFrames?.Where(f => f <= slider.Value).DefaultIfEmpty(0).Last() ?? slider.Value;
+            slider.SelectionStart = splitTime-0.1;
 
         }
 
         void Button_SelEnd(object sender, RoutedEventArgs e)
         {
-            slider.SelectionEnd = slider.Value;
+            var splitTime = DataContext.CurrentFile.KeyFrames?.Where(f => f >= slider.Value).DefaultIfEmpty(DataContext.CurrentFile.Duration).First() ?? slider.Value;
+            slider.SelectionEnd = splitTime;
         }
 
         void Button_Play(object sender, RoutedEventArgs e)
@@ -191,10 +200,12 @@ namespace JoinerSplitter
 
         void Seek(TimeSpan timeSpan, TimeSeekOrigin origin = TimeSeekOrigin.BeginTime)
         {
-            try {
+            try
+            {
                 wasPaused = storyboard.GetIsPaused(mainGrid);
                 storyboard.SeekAlignedToLastTick(mainGrid, timeSpan, origin);
-            }catch(InvalidOperationException)
+            }
+            catch (InvalidOperationException)
             {
                 //Ignore if file selection happened;
             }
@@ -293,16 +304,16 @@ namespace JoinerSplitter
             var curFile = DataContext.CurrentFile;
             var currentIndex = DataContext.CurrentJob.Files.IndexOf(curFile);
             var currentTime = slider.Value;
-            var splitTime = curFile.KeyFrames.Where(f => f > currentTime).DefaultIfEmpty(curFile.Duration).First();
+            var splitTime = curFile.KeyFrames?.Where(f => f > currentTime).DefaultIfEmpty(curFile.Duration).First() ?? currentTime;
             if (splitTime <= curFile.Start || splitTime >= curFile.End) return;
 
             var newFile = new VideoFile(curFile)
             {
-                Start = splitTime + 0.1,
+                Start = splitTime - 0.01,
                 GroupIndex = curFile.GroupIndex + 1
             };
 
-            curFile.End = splitTime - 0.1;
+            curFile.End = splitTime;
             DataContext.CurrentJob.Files.Insert(currentIndex + 1, newFile);
             for (var i = currentIndex + 2; i < DataContext.CurrentJob.Files.Count; i++)
                 DataContext.CurrentJob.Files[i].GroupIndex += 1;
