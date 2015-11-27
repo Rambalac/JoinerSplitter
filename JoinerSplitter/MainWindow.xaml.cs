@@ -191,8 +191,13 @@ namespace JoinerSplitter
 
         void Seek(TimeSpan timeSpan, TimeSeekOrigin origin = TimeSeekOrigin.BeginTime)
         {
-            wasPaused = storyboard.GetIsPaused(mainGrid);
-            storyboard.SeekAlignedToLastTick(mainGrid, timeSpan, origin);
+            try {
+                wasPaused = storyboard.GetIsPaused(mainGrid);
+                storyboard.SeekAlignedToLastTick(mainGrid, timeSpan, origin);
+            }catch(InvalidOperationException)
+            {
+                //Ignore if file selection happened;
+            }
         }
 
         bool wasPaused;
@@ -293,7 +298,7 @@ namespace JoinerSplitter
 
             var newFile = new VideoFile(curFile)
             {
-                Start = splitTime+0.1,
+                Start = splitTime + 0.1,
                 GroupIndex = curFile.GroupIndex + 1
             };
 
@@ -488,27 +493,41 @@ namespace JoinerSplitter
             if (groupIndex < 0) groupIndex = 0;
         }
 
+        VideoFile GetItem(Point point)
+        {
+            var result = GetItemAt(filesList, point);
+            if (result == null) return null;
+
+            var listItem = result as ListViewItem;
+            if (listItem != null)
+                return listItem.Content as VideoFile;
+            return null;
+        }
+
         private async void filesList_Drop(object sender, DragEventArgs e)
         {
-            if (insertAdorner != null)
+            using (var d = Dispatcher.DisableProcessing())
             {
-                VideoFile before;
-                int groupIndex;
-                GetBeforeAndGroup(e.GetPosition(filesList), out before, out groupIndex);
-
-                if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                if (insertAdorner != null)
                 {
-                    var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                    await addFiles(files, before, groupIndex);
-                }
-                else if (e.Data.GetDataPresent(typeof(VideoFile[])))
-                {
-                    var files = (VideoFile[])e.Data.GetData(typeof(VideoFile[]));
-                    moveFiles(files, before, groupIndex);
-                }
+                    VideoFile before;
+                    int groupIndex;
+                    GetBeforeAndGroup(e.GetPosition(filesList), out before, out groupIndex);
 
-                AdornerLayer.GetAdornerLayer(filesList).Remove(insertAdorner);
-                insertAdorner = null;
+                    if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                    {
+                        var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                        await addFiles(files, before, groupIndex);
+                    }
+                    else if (e.Data.GetDataPresent(typeof(VideoFile[])))
+                    {
+                        var files = (VideoFile[])e.Data.GetData(typeof(VideoFile[]));
+                        moveFiles(files, before, groupIndex);
+                    }
+
+                    AdornerLayer.GetAdornerLayer(filesList).Remove(insertAdorner);
+                    insertAdorner = null;
+                }
             }
         }
 
@@ -532,23 +551,21 @@ namespace JoinerSplitter
         }
 
         Point? dragStartPoint;
-        VideoFile[] selected;
 
         private void filesList_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             dragStartPoint = e.GetPosition(null);
-            selected = filesList.SelectedItems.Cast<VideoFile>().OrderBy(f => DataContext.CurrentJob.Files.IndexOf(f)).ToArray();
+            e.Handled = true;
         }
 
         private void filesList_MouseMove(object sender, MouseEventArgs e)
         {
-            if (selected != null) foreach (var file in selected) filesList.SelectedItems.Add(file);
-
             if (e.LeftButton == MouseButtonState.Pressed && dragStartPoint != null)
             {
                 var drag = (Vector)(e.GetPosition(null) - dragStartPoint);
                 if (drag.X > SystemParameters.MinimumHorizontalDragDistance || drag.Y > SystemParameters.MinimumVerticalDragDistance)
                 {
+                    var selected = filesList.SelectedItems.Cast<VideoFile>().OrderBy(f => DataContext.CurrentJob.Files.IndexOf(f)).ToArray();
                     DragDrop.DoDragDrop(filesList, selected, DragDropEffects.Move);
                     dragStartPoint = null;
                     selected = null;
@@ -559,8 +576,44 @@ namespace JoinerSplitter
 
         private void filesList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            selected = null;
-            dragStartPoint = null;
+            using (var d = Dispatcher.DisableProcessing())
+            {
+                if (dragStartPoint != null)
+                {
+                    var drag = (Vector)(e.GetPosition(null) - dragStartPoint);
+                    if (drag.X <= SystemParameters.MinimumHorizontalDragDistance && drag.Y <= SystemParameters.MinimumVerticalDragDistance)
+                    {
+                        var selected = GetItem(e.GetPosition(filesList));
+                        if (selected != null)
+                        {
+                            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                            {
+                                if (filesList.SelectedItems.Contains(selected))
+                                    filesList.SelectedItems.Remove(selected);
+                                else
+                                    filesList.SelectedItems.Add(selected);
+                            }
+                            else if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                            {
+                                var start = DataContext.CurrentJob.Files.IndexOf((VideoFile)filesList.SelectedItem);
+                                var count = DataContext.CurrentJob.Files.IndexOf(selected) - start;
+                                if (count < 0) { start += count; count = -count; }
+
+                                filesList.SelectedItems.Clear();
+                                foreach (var item in DataContext.CurrentJob.Files.Skip(start).Take(count + 1).ToList())
+                                    filesList.SelectedItems.Add(item);
+                            }
+                            else
+                            {
+                                if (filesList.SelectedItems.Count > 1)
+                                    filesList.SelectedItems.Clear();
+                                filesList.SelectedItem = selected;
+                            }
+                        }
+                    }
+                    dragStartPoint = null;
+                }
+            }
         }
 
         private void SaveJobAs(object sender = null, RoutedEventArgs e = null)
@@ -644,5 +697,6 @@ namespace JoinerSplitter
             DataContext.CurrentJob = new Job();
             DataContext.CurrentFile = null;
         }
+
     }
 }
