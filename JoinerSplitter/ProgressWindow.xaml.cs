@@ -8,11 +8,12 @@ namespace JoinerSplitter
     /// </summary>
     partial class ProgressWindow : Window
     {
-        ProgressWindow()
+        private bool wasEnabled;
+
+        private ProgressWindow()
         {
             InitializeComponent();
         }
-        bool wasEnabled;
         public static ProgressWindow Show(Window owner)
         {
             var dlg = new ProgressWindow();

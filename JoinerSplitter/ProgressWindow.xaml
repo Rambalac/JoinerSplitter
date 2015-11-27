@@ -7,13 +7,13 @@
         mc:Ignorable="d"
         Title="Progress" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" ShowInTaskbar="False" Topmost="True" WindowStyle="None">
     <Border Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1">
-        <Grid >
+        <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ProgressBar Width="300" x:Name="progress" Margin="10,10,0,10"/>
-            <Button x:Name="cancelButton" Content="Cancel" Margin="10" Grid.Column="1" Padding="10,1"/>
+            <ProgressBar Width="300" x:Name="progress" Margin="10,10,0,10" />
+            <Button x:Name="cancelButton" Content="Cancel" Margin="10" Grid.Column="1" Padding="10,1" />
         </Grid>
     </Border>
 </Window>

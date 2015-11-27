@@ -3,12 +3,18 @@ using System.ComponentModel;
 
 namespace JoinerSplitter
 {
-
     public class AppModel : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-        Job currentJob;
+        private VideoFile currentFile;
 
+        private Job currentJob;
+
+        public AppModel()
+        {
+            CurrentJob = new Job();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
         public VideoFile CurrentFile
         {
             get
@@ -24,10 +30,7 @@ namespace JoinerSplitter
             }
         }
 
-        public bool HasCurrentFile => CurrentFile != null;
-
         public Uri CurrentFileUri => CurrentFile?.FileUri ?? new Uri("");
-
         public Job CurrentJob
         {
             get
@@ -42,13 +45,8 @@ namespace JoinerSplitter
             }
         }
 
-        VideoFile currentFile;
-
-        public AppModel()
-        {
-            CurrentJob = new Job();
-        }
-        void OnPropertyChanged(string propertyName)
+        public bool HasCurrentFile => CurrentFile != null;
+        private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

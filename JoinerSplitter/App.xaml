@@ -4,19 +4,19 @@
              xmlns:local="clr-namespace:JoinerSplitter"
              Startup="Application_Startup">
     <Application.Resources>
-        <Style x:Key="GridSplitterPreviewStyle" >
+        <Style x:Key="GridSplitterPreviewStyle">
             <Setter Property="Control.Template">
                 <Setter.Value>
                     <ControlTemplate>
-                        <Rectangle Fill="#80000000"/>
+                        <Rectangle Fill="#80000000" />
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
         <Style x:Key="GridSplitterStyleHorizontal" TargetType="{x:Type GridSplitter}">
             <Setter Property="Background"
-                Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
-            <Setter Property="PreviewStyle" Value="{StaticResource GridSplitterPreviewStyle}"/>
+                Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+            <Setter Property="PreviewStyle" Value="{StaticResource GridSplitterPreviewStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type GridSplitter}">
@@ -27,17 +27,17 @@
                                 Height="5" VerticalAlignment="Center"
                                 Width="50" HorizontalAlignment="Center">
                                 <Line X1="0" X2="50" Y1="0" Y2="0"
-                                  Stroke="White" StrokeThickness="1"/>
+                                  Stroke="White" StrokeThickness="1" />
                                 <Line X1="0" X2="50" Y1="1" Y2="1"
-                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                                  Stroke="#A0A0A0" StrokeThickness="1" />
                                 <Line X1="0" X2="50" Y1="2" Y2="2"
-                                  Stroke="White" StrokeThickness="1"/>
+                                  Stroke="White" StrokeThickness="1" />
                                 <Line X1="0" X2="50" Y1="3" Y2="3"
-                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                                  Stroke="#A0A0A0" StrokeThickness="1" />
                                 <Line X1="0" X2="50" Y1="4" Y2="4"
-                                  Stroke="White" StrokeThickness="1"/>
+                                  Stroke="White" StrokeThickness="1" />
                                 <Line X1="0" X2="50" Y1="5" Y2="5"
-                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                                  Stroke="#A0A0A0" StrokeThickness="1" />
                             </Canvas>
                         </Border>
                     </ControlTemplate>
@@ -46,8 +46,8 @@
         </Style>
         <Style x:Key="GridSplitterStyleVertical" TargetType="{x:Type GridSplitter}">
             <Setter Property="Background"
-                Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
-            <Setter Property="PreviewStyle" Value="{StaticResource GridSplitterPreviewStyle}"/>
+                Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+            <Setter Property="PreviewStyle" Value="{StaticResource GridSplitterPreviewStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type GridSplitter}">
@@ -58,37 +58,37 @@
                                 Width="5" HorizontalAlignment="Center"
                                 Height="50" VerticalAlignment="Center">
                                 <Line Y1="0" Y2="50" X1="0" X2="0"
-                                  Stroke="White" StrokeThickness="1"/>
+                                  Stroke="White" StrokeThickness="1" />
                                 <Line Y1="0" Y2="50" X1="1" X2="1"
-                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                                  Stroke="#A0A0A0" StrokeThickness="1" />
                                 <Line Y1="0" Y2="50" X1="2" X2="2"
-                                  Stroke="White" StrokeThickness="1"/>
+                                  Stroke="White" StrokeThickness="1" />
                                 <Line Y1="0" Y2="50" X1="3" X2="3"
-                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                                  Stroke="#A0A0A0" StrokeThickness="1" />
                                 <Line Y1="0" Y2="50" X1="4" X2="4"
-                                  Stroke="White" StrokeThickness="1"/>
+                                  Stroke="White" StrokeThickness="1" />
                                 <Line Y1="0" Y2="50" X1="5" X2="5"
-                                  Stroke="#A0A0A0" StrokeThickness="1"/>
+                                  Stroke="#A0A0A0" StrokeThickness="1" />
                             </Canvas>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="WatermarkedTextBox" >
-            <Setter Property="Control.Template" >
+        <Style x:Key="WatermarkedTextBox">
+            <Setter Property="Control.Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
                         <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
                             <Grid>
-                                <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                                <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
 
-                                <TextBlock x:Name="InternalWatermarkLabel" 
-                       Text="{TemplateBinding Tag}" 
+                                <TextBlock x:Name="InternalWatermarkLabel"
+                       Text="{TemplateBinding Tag}"
                        Visibility="Collapsed" Focusable="False"
                        VerticalAlignment="Top" Margin=" 5 1 0 0"
                        Foreground="Silver"
-                       Background="Transparent"/>
+                       Background="Transparent" />
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -102,13 +102,13 @@
                                 </MultiTrigger.Setters>
                             </MultiTrigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                                <Setter Property="Opacity" TargetName="border" Value="0.56" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="BorderBrush" TargetName="border" Value="#FF7EB4EA"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="#FF7EB4EA" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter Property="BorderBrush" TargetName="border" Value="#FF569DE5"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="#FF569DE5" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -116,5 +116,4 @@
             </Setter>
         </Style>
     </Application.Resources>
-
 </Application>

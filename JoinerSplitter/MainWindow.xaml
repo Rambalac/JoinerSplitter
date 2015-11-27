@@ -12,133 +12,132 @@
     <Window.Resources>
         <CollectionViewSource Source="{Binding CurrentJob.Files}" IsLiveGroupingRequested="True" x:Key="files">
             <CollectionViewSource.GroupDescriptions>
-                <PropertyGroupDescription PropertyName="GroupIndex"/>
+                <PropertyGroupDescription PropertyName="GroupIndex" />
             </CollectionViewSource.GroupDescriptions>
         </CollectionViewSource>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <local:DoubleToTimeSpan x:Key="DoubleToTimeSpanConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <local:DoubleToTimeSpan x:Key="DoubleToTimeSpanConverter" />
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
         </Grid.RowDefinitions>
         <Menu>
             <MenuItem Header="_File">
-                <MenuItem Header="_New job" Click="NewJob"/>
-                <MenuItem Header="_Open job" Click="OpenJob"/>
-                <MenuItem Header="_Save job" Click="SaveJob"/>
-                <MenuItem Header="Save job _As..." Click="SaveJobAs"/>
-                <Separator/>
+                <MenuItem Header="_New job" Click="NewJob" />
+                <MenuItem Header="_Open job" Click="OpenJob" />
+                <MenuItem Header="_Save job" Click="SaveJob" />
+                <MenuItem Header="Save job _As..." Click="SaveJobAs" />
+                <Separator />
                 <MenuItem Header="_Add video" Click="Button_AddVideo" />
-                <MenuItem Header="Du_plicate" Click="Button_Duplicate"/>
-                <MenuItem Header="_Delete" Click="Button_Delete"/>
-                <Separator/>
-                <MenuItem Header="E_xport"/>
-                <Separator/>
-                <MenuItem Header="E_xit"/>
+                <MenuItem Header="Du_plicate" Click="Button_Duplicate" />
+                <MenuItem Header="_Delete" Click="Button_Delete" />
+                <Separator />
+                <MenuItem Header="E_xport" />
+                <Separator />
+                <MenuItem Header="E_xit" />
             </MenuItem>
             <MenuItem Header="_Video"></MenuItem>
         </Menu>
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="300"/>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="300" />
             </Grid.ColumnDefinitions>
             <Grid x:Name="mainGrid" Grid.RowSpan="5">
                 <Grid.RowDefinitions>
-                    <RowDefinition/>
+                    <RowDefinition />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <MediaElement x:Name="mediaElement" Visibility="{Binding CurrentFile, TargetNullValue=Hidden}" ScrubbingEnabled="True" Volume="1" LoadedBehavior="Manual" UnloadedBehavior="Manual" />
-                <WrapPanel Grid.Row="1" Visibility="{Binding CurrentFile, TargetNullValue=Hidden}" Width="550" Margin="0,5,0,5" >
-                    <TextBlock Text="Current:" Margin="10,2,0,0"/>
-                    <xctk:TimeSpanUpDown FractionalSecondsDigitsCount="3" Value="{Binding Value, Converter={StaticResource DoubleToTimeSpanConverter}, ElementName=slider}"/>
-                    <TextBlock Text="Start:" Margin="10,2,0,0"/>
-                    <xctk:TimeSpanUpDown FractionalSecondsDigitsCount="3" Value="{Binding SelectionStart, Converter={StaticResource DoubleToTimeSpanConverter}, ElementName=slider}"/>
-                    <TextBlock Text="End:" Margin="10,2,0,0"/>
-                    <xctk:TimeSpanUpDown FractionalSecondsDigitsCount="3" Value="{Binding SelectionEnd, Converter={StaticResource DoubleToTimeSpanConverter}, ElementName=slider}"/>
-                    <TextBlock Text="Duration:" Margin="10,2,0,0"/>
-                    <TextBlock Text="{Binding CurrentFile.Duration,Converter={StaticResource DoubleToTimeSpanConverter}, StringFormat=hh\\:mm\\:ss\\.fff}"  Margin="5,2,0,0"/>
+                <WrapPanel Grid.Row="1" Visibility="{Binding CurrentFile, TargetNullValue=Hidden}" Width="550" Margin="0,5,0,5">
+                    <TextBlock Text="Current:" Margin="10,2,0,0" />
+                    <xctk:TimeSpanUpDown FractionalSecondsDigitsCount="3" Value="{Binding Value, Converter={StaticResource DoubleToTimeSpanConverter}, ElementName=slider}" />
+                    <TextBlock Text="Start:" Margin="10,2,0,0" />
+                    <xctk:TimeSpanUpDown FractionalSecondsDigitsCount="3" Value="{Binding SelectionStart, Converter={StaticResource DoubleToTimeSpanConverter}, ElementName=slider}" />
+                    <TextBlock Text="End:" Margin="10,2,0,0" />
+                    <xctk:TimeSpanUpDown FractionalSecondsDigitsCount="3" Value="{Binding SelectionEnd, Converter={StaticResource DoubleToTimeSpanConverter}, ElementName=slider}" />
+                    <TextBlock Text="Duration:" Margin="10,2,0,0" />
+                    <TextBlock Text="{Binding CurrentFile.Duration,Converter={StaticResource DoubleToTimeSpanConverter}, StringFormat=hh\\:mm\\:ss\\.fff}"  Margin="5,2,0,0" />
                 </WrapPanel>
-                <Slider x:Name="slider" 
+                <Slider x:Name="slider"
             IsMoveToPointEnabled="True"
-            Grid.Row="2" 
-            IsSelectionRangeEnabled="True" 
-            Minimum="0" 
-            Maximum="{Binding CurrentFile.Duration, FallbackValue=0}" 
+            Grid.Row="2"
+            IsSelectionRangeEnabled="True"
+            Minimum="0"
+            Maximum="{Binding CurrentFile.Duration, FallbackValue=0}"
             SelectionStart="{Binding CurrentFile.Start, FallbackValue=0}"
             SelectionEnd="{Binding CurrentFile.End, FallbackValue=0}"
-            TickFrequency="1" 
+            TickFrequency="1"
             TickPlacement="BottomRight"
             IsEnabled="{Binding HasCurrentFile}"
                 Margin="0,0,0,5"
-            ValueChanged="slider_ValueChanged" PreviewMouseDown="slider_PreviewMouseDown" PreviewMouseUp="slider_PreviewMouseUp"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="3" IsEnabled="{Binding HasCurrentFile}" >
-                    <Button Content="Prev" ToolBar.OverflowMode="Never"/>
+            ValueChanged="slider_ValueChanged" PreviewMouseDown="slider_PreviewMouseDown" PreviewMouseUp="slider_PreviewMouseUp" />
+                <StackPanel Orientation="Horizontal" Grid.Row="3" IsEnabled="{Binding HasCurrentFile}">
+                    <Button Content="Prev" ToolBar.OverflowMode="Never" />
                     <Button ToolTip="Seek to the start of selection" Click="Button_Start">
-                        <Image Source="Icons/SeekStart.png"/>
+                        <Image Source="Icons/SeekStart.png" />
                     </Button>
                     <Button ToolTip="Selection Start" Click="Button_SelStart">
-                        <Image Source="Icons/CutStart.png"/>
+                        <Image Source="Icons/CutStart.png" />
                     </Button>
                     <Button x:Name="playButton" ToolTip="Play/stop video" Click="Button_Play">
-                        <Image Source="Icons/PlayPause.png"/>
+                        <Image Source="Icons/PlayPause.png" />
                     </Button>
                     <Button x:Name="splitButton" ToolTip="Split selected cut to separate videos by current position" Click="splitButton_Click">
-                        <Image Source="Icons/Cut_6523_24.png"/>
+                        <Image Source="Icons/Cut_6523_24.png" />
                     </Button>
                     <Button ToolTip="Selection End" Click="Button_SelEnd">
-                        <Image Source="Icons/CutEnd.png"/>
+                        <Image Source="Icons/CutEnd.png" />
                     </Button>
                     <Button ToolTip="Seek to the end of selection" Click="Button_End">
-                        <Image Source="Icons/SeekEnd.png"/>
+                        <Image Source="Icons/SeekEnd.png" />
                     </Button>
-                    <Button Content="Next" ToolBar.OverflowMode="Never"/>
+                    <Button Content="Next" ToolBar.OverflowMode="Never" />
                 </StackPanel>
             </Grid>
-            <GridSplitter x:Name="mainSplitter" Grid.Column="1" Grid.RowSpan="6" HorizontalAlignment="Stretch" Style="{DynamicResource GridSplitterStyleVertical}"/>
+            <GridSplitter x:Name="mainSplitter" Grid.Column="1" Grid.RowSpan="6" HorizontalAlignment="Stretch" Style="{DynamicResource GridSplitterStyleVertical}" />
             <StackPanel Orientation="Horizontal" Grid.Column="2">
                 <Button ToolTip="Add video" Click="Button_AddVideo" ToolBar.OverflowMode="Never">
-                    <Image Source="Icons/AddMark_10580_inverse.png"/>
+                    <Image Source="Icons/AddMark_10580_inverse.png" />
                 </Button>
                 <Button ToolTip="Move files up in group or to previous group" IsEnabled="{Binding HasCurrentFile}" Click="Button_MoveUp">
-                    <Image Source="Icons/arrow_Up_16xLG.png"/>
+                    <Image Source="Icons/arrow_Up_16xLG.png" />
                 </Button>
                 <Button ToolTip="Down" IsEnabled="{Binding HasCurrentFile}" Click="Button_MoveDown">
-                    <Image Source="Icons/arrow_Down_16xLG.png"/>
+                    <Image Source="Icons/arrow_Down_16xLG.png" />
                 </Button>
                 <Button ToolTip="Split" IsEnabled="{Binding HasCurrentFile}" Click="Button_SplitFiles">
-                    <Image Source="Icons/Cut_6523.png"/>
+                    <Image Source="Icons/Cut_6523.png" />
                 </Button>
                 <Button ToolTip="Duplicate" IsEnabled="{Binding HasCurrentFile}" Click="Button_Duplicate">
-                    <Image Source="Icons/Copy_6524.png"/>
+                    <Image Source="Icons/Copy_6524.png" />
                 </Button>
                 <Button ToolTip="Delete" IsEnabled="{Binding HasCurrentFile}" Click="Button_Delete">
-                    <Image Source="Icons/action_Cancel_16xLG.png"/>
+                    <Image Source="Icons/action_Cancel_16xLG.png" />
                 </Button>
-
             </StackPanel>
-            <ListView 
-            x:Name="filesList" Grid.Column="2" Grid.Row="1"  
-            ItemsSource="{Binding Source={StaticResource files}}" d:DataContext="{d:DesignInstance {x:Type local:VideoFile}}" 
+            <ListView
+            x:Name="filesList" Grid.Column="2" Grid.Row="1"
+            ItemsSource="{Binding Source={StaticResource files}}" d:DataContext="{d:DesignInstance {x:Type local:VideoFile}}"
             SelectionChanged="outputList_SelectionChanged" DragEnter="filesList_DragEnter" DragOver="filesList_DragOver" Drop="filesList_Drop"
-            AllowDrop="True" DragLeave="filesList_DragLeave" PreviewMouseLeftButtonDown="filesList_MouseLeftButtonDown" PreviewMouseMove="filesList_MouseMove" PreviewMouseLeftButtonUp="filesList_PreviewMouseLeftButtonUp" >
+            AllowDrop="True" DragLeave="filesList_DragLeave" PreviewMouseLeftButtonDown="filesList_MouseLeftButtonDown" PreviewMouseMove="filesList_MouseMove" PreviewMouseLeftButtonUp="filesList_PreviewMouseLeftButtonUp">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Original File" Width="110" DisplayMemberBinding="{Binding FileName}"/>
-                        <GridViewColumn Header="Start" Width="80" DisplayMemberBinding="{Binding Start,Converter={StaticResource DoubleToTimeSpanConverter}, StringFormat=hh\\:mm\\:ss\\.fff}"/>
-                        <GridViewColumn Header="End" Width="80" DisplayMemberBinding="{Binding End,Converter={StaticResource DoubleToTimeSpanConverter}, StringFormat=hh\\:mm\\:ss\\.fff}"/>
+                        <GridViewColumn Header="Original File" Width="110" DisplayMemberBinding="{Binding FileName}" />
+                        <GridViewColumn Header="Start" Width="80" DisplayMemberBinding="{Binding Start,Converter={StaticResource DoubleToTimeSpanConverter}, StringFormat=hh\\:mm\\:ss\\.fff}" />
+                        <GridViewColumn Header="End" Width="80" DisplayMemberBinding="{Binding End,Converter={StaticResource DoubleToTimeSpanConverter}, StringFormat=hh\\:mm\\:ss\\.fff}" />
                     </GridView>
                 </ListView.View>
 
@@ -148,12 +147,12 @@
                             <DataTemplate>
                                 <Grid Visibility="{Binding DataContext.CurrentJob.HasMoreGroupsThanOne, Converter={StaticResource BooleanToVisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
                                     <Separator Margin="0,5,5,2" />
-                                    <TextBlock Grid.Column="1" FontWeight="Bold" FontSize="14" Text="{Binding Name}"/>
+                                    <TextBlock Grid.Column="1" FontWeight="Bold" FontSize="14" Text="{Binding Name}" />
                                     <Separator Grid.Column="2" Margin="5,5,0,2" />
                                 </Grid>
                             </DataTemplate>
@@ -161,12 +160,11 @@
                     </GroupStyle>
                 </ListView.GroupStyle>
             </ListView>
-            <TextBox x:Name="outputFolderBox" Grid.Column="2" Grid.Row="2" TextWrapping="WrapWithOverflow"  Text="{Binding CurrentJob.OutputFolder}" Tag="Output folder" 
+            <TextBox x:Name="outputFolderBox" Grid.Column="2" Grid.Row="2" TextWrapping="WrapWithOverflow"  Text="{Binding CurrentJob.OutputFolder}" Tag="Output folder"
             Style="{StaticResource WatermarkedTextBox}" IsReadOnly="True" PreviewMouseDown="outputFolderBox_MouseDown" />
-            <TextBox x:Name="outputFilenameBox" Grid.Column="2" Grid.Row="3" TextWrapping="WrapWithOverflow" Text="{Binding CurrentJob.OutputName}" Tag="Output file name" 
+            <TextBox x:Name="outputFilenameBox" Grid.Column="2" Grid.Row="3" TextWrapping="WrapWithOverflow" Text="{Binding CurrentJob.OutputName}" Tag="Output file name"
             Style="{StaticResource WatermarkedTextBox}"  PreviewTextInput="outputFilenameBox_TextInput" />
-            <Button x:Name="processButton" Content="Export" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="4" Click="processButton_Click"/>
-
+            <Button x:Name="processButton" Content="Export" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="4" Click="processButton_Click" />
         </Grid>
     </Grid>
 </Window>

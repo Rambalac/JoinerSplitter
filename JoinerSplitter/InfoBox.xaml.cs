@@ -8,12 +8,12 @@ namespace JoinerSplitter
     /// </summary>
     public partial class InfoBox : Window
     {
-        InfoBox()
+        private bool wasEnabled;
+
+        private InfoBox()
         {
             InitializeComponent();
         }
-
-        bool wasEnabled;
         public static InfoBox Show(Window owner, string text)
         {
             var dlg = new InfoBox();

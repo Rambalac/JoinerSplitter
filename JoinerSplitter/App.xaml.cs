@@ -7,7 +7,7 @@ namespace JoinerSplitter
     /// </summary>
     public partial class App : Application
     {
-        void Application_Startup(object sender, StartupEventArgs e)
+        private void Application_Startup(object sender, StartupEventArgs e)
         {
             var view = new MainWindow();
             view.DataContext = new AppModel();

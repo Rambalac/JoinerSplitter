@@ -5,9 +5,23 @@ using System.Windows.Media;
 
 namespace JoinerSplitter
 {
-    class ListViewInsertMarkAdorner : Adorner
+    /// <summary>
+    /// Interaction logic for UserControl1.xaml
+    /// </summary>
+    public partial class ListViewInsertMarkAdornerView : UserControl
+    {
+        public ListViewInsertMarkAdornerView()
+        {
+            InitializeComponent();
+        }
+    }
+
+    internal class ListViewInsertMarkAdorner : Adorner
     {
         public FrameworkElement view;
+
+        private double offset;
+
         public ListViewInsertMarkAdorner(Control adornedElement) : base(adornedElement)
         {
             this.view = new ListViewInsertMarkAdornerView();
@@ -17,11 +31,7 @@ namespace JoinerSplitter
             view.IsHitTestVisible = false;
         }
 
-        protected override Visual GetVisualChild(int index) => view;
-
-#pragma warning disable RECS0018 // Comparison with 0
-        protected override int VisualChildrenCount => (offset == 0) ? 0 : 1;
-
+#pragma warning disable RECS0018 // Comparison of floating point numbers with equality operator
         public double Offset
         {
             get
@@ -38,9 +48,9 @@ namespace JoinerSplitter
                 }
             }
         }
-#pragma warning restore RECS0018 // Comparison with 0
 
-        double offset;
+        protected override int VisualChildrenCount => (offset == 0) ? 0 : 1;
+#pragma warning restore RECS0018 // Comparison of floating point numbers with equality operator
 
         public override GeneralTransform GetDesiredTransform(GeneralTransform transform)
         {
@@ -48,17 +58,6 @@ namespace JoinerSplitter
             result.Children.Add(base.GetDesiredTransform(transform));
             result.Children.Add(new TranslateTransform(0, offset));
             return result;
-        }
-
-        /// <summary>
-        /// Override.
-        /// </summary>
-        /// <param name="constraint"></param>
-        /// <returns></returns>
-        protected override Size MeasureOverride(Size constraint)
-        {
-            view.Measure(constraint);
-            return view.DesiredSize;
         }
 
         /// <summary>
@@ -72,17 +71,19 @@ namespace JoinerSplitter
             return finalSize;
         }
 
-    }
+        protected override Visual GetVisualChild(int index) => view;
 
-    /// <summary>
-    /// Interaction logic for UserControl1.xaml
-    /// </summary>
-    public partial class ListViewInsertMarkAdornerView : UserControl
-    {
-
-        public ListViewInsertMarkAdornerView()
+#pragma warning disable RECS0018 // Comparison with 0
+#pragma warning restore RECS0018 // Comparison with 0
+        /// <summary>
+        /// Override.
+        /// </summary>
+        /// <param name="constraint"></param>
+        /// <returns></returns>
+        protected override Size MeasureOverride(Size constraint)
         {
-            InitializeComponent();
+            view.Measure(constraint);
+            return view.DesiredSize;
         }
     }
 }

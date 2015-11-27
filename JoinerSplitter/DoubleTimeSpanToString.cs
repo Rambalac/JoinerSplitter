@@ -18,6 +18,7 @@ namespace JoinerSplitter
             return TimeSpan.Parse(val, CultureInfo.InvariantCulture).TotalSeconds;
         }
     }
+
     public class DoubleToTimeSpan : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
