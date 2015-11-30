@@ -19,15 +19,21 @@ namespace JoinerSplitter
             var dlg = new InfoBox();
             dlg.textBlock.Text = text;
             dlg.Owner = owner;
-            dlg.wasEnabled = owner.IsEnabled;
-            owner.IsEnabled = false;
+            if (owner != null)
+            {
+                dlg.wasEnabled = owner.IsEnabled;
+                owner.IsEnabled = false;
+            }
             dlg.Show();
             return dlg;
         }
 
         protected override void OnClosed(EventArgs e)
         {
-            Owner.IsEnabled = wasEnabled;
+            if (Owner != null)
+            {
+                Owner.IsEnabled = wasEnabled;
+            }
             base.OnClosed(e);
         }
     }

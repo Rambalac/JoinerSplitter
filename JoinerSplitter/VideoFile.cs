@@ -20,7 +20,7 @@ namespace JoinerSplitter
         [DataMember]
         private int groupIndex;
 
-        private List<double> keyFrames;
+        private ICollection<double> keyFrames;
 
         [DataMember]
         private double start;
@@ -28,7 +28,7 @@ namespace JoinerSplitter
         {
         }
 
-        public VideoFile(string path, double duration, List<double> keyFrames)
+        public VideoFile(string path, double duration, ICollection<double> keyFrames)
         {
             filePath = path;
             this.duration = end = duration;
@@ -37,6 +37,7 @@ namespace JoinerSplitter
 
         public VideoFile(VideoFile video)
         {
+            if (video == null) throw new ArgumentNullException(nameof(video));
             filePath = video.filePath;
             duration = video.Duration;
             keyFrames = video.keyFrames;
@@ -80,7 +81,7 @@ namespace JoinerSplitter
             }
         }
 
-        public List<double> KeyFrames => keyFrames;
+        public ICollection<double> KeyFrames => keyFrames;
         public double Start
         {
             get
@@ -94,9 +95,9 @@ namespace JoinerSplitter
                 OnPropertyChanged(nameof(Start));
             }
         }
-        protected virtual void OnPropertyChanged(string e)
+        protected virtual void OnPropertyChanged(string propertyName)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(e));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
@@ -110,8 +111,8 @@ namespace JoinerSplitter
                 }
                 else throw new SerializationException("Video file used in job does not exist");
             }
-            duration = FFMpeg.GetInstance().GetDuration(filePath).Result;
-            keyFrames = FFMpeg.GetInstance().GetKeyFrames(filePath).Result;
+            duration = FFMpeg.Instance.GetDuration(filePath).Result;
+            keyFrames = FFMpeg.Instance.GetKeyFrames(filePath).Result;
         }
     }
 }

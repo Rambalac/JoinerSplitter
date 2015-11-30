@@ -7,8 +7,10 @@
         xmlns:dat="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Class="JoinerSplitter.MainWindow"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance {x:Type local:AppModel}}"
         Title="MainWindow" Height="541" Width="1000">
+    <Window.DataContext>
+        <local:AppModel/>
+    </Window.DataContext>
     <Window.Resources>
         <CollectionViewSource Source="{Binding CurrentJob.Files}" IsLiveGroupingRequested="True" x:Key="files">
             <CollectionViewSource.GroupDescriptions>

@@ -1,5 +1,7 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
+[assembly: CLSCompliant(true)]
 namespace JoinerSplitter
 {
     /// <summary>
@@ -7,11 +9,5 @@ namespace JoinerSplitter
     /// </summary>
     public partial class App : Application
     {
-        private void Application_Startup(object sender, StartupEventArgs e)
-        {
-            var view = new MainWindow();
-            view.DataContext = new AppModel();
-            view.Show();
-        }
     }
 }

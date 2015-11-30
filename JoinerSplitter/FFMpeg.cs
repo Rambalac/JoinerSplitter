@@ -25,8 +25,12 @@ namespace JoinerSplitter
 
         public string FFProbePath { get; set; } = "ffprobe.exe";
 
-        public static FFMpeg GetInstance() => Instance;
-        public async Task DoJob(Job job, Action<int> progress = null)
+        public async Task DoJob(Job job)
+        {
+            await DoJob(job, null);
+        }
+
+        public async Task DoJob(Job job, Action<int> progress)
         {
             var totalSec = job.Files.Sum(f => f.Duration);
             double done = 0;
@@ -46,51 +50,41 @@ namespace JoinerSplitter
 
         public async Task<double> GetDuration(string filePath)
         {
-            var proc = StartProcess(FFProbePath, "-v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1", $"\"{filePath}\"");
-            await proc.Task;
-
-            try
+            using (var result = StartProcess(FFProbePath, "-v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1", $"\"{filePath}\""))
             {
-                var line = GetLine(proc.ResultLines);
-                var result = double.Parse(line, CultureInfo.InvariantCulture);
+                var proc = await result;
 
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Wrong ffprobe result: " + string.Join("\r\n", proc.ResultLines), ex);
+                try
+                {
+                    var line = proc.GetLine();
+                    return double.Parse(line, CultureInfo.InvariantCulture);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Wrong ffprobe result: " + string.Join("\r\n", proc.ResultLines), ex);
+                }
             }
         }
 
         public async Task<List<double>> GetKeyFrames(string filePath)
         {
-            var proc = StartProcess(FFProbePath, -1, "-v error -select_streams v -show_frames -show_entries frame=key_frame,best_effort_timestamp_time -of csv", $"\"{filePath}\"");
-            await proc.Task;
-
-            try
+            using (var result = StartProcess(FFProbePath, -1, "-v error -select_streams v -show_frames -show_entries frame=key_frame,best_effort_timestamp_time -of csv", $"\"{filePath}\""))
             {
-                var lines = GetLines(proc.ResultLines);
-                var result = lines.Where(s => s.StartsWith("frame,1", StringComparison.InvariantCulture))
-                    .Select(s => double.Parse(s.Substring(8), CultureInfo.InvariantCulture)).ToList();
+                var proc = await result;
 
-                return result;
+                try
+                {
+                    var lines = proc.GetLines();
+                    return lines.Where(s => s.StartsWith("frame,1", StringComparison.InvariantCulture))
+                        .Select(s => double.Parse(s.Substring(8), CultureInfo.InvariantCulture)).ToList();
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Wrong ffprobe result: " + string.Join("\r\n", proc.ResultLines), ex);
+                }
             }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Wrong ffprobe result: " + string.Join("\r\n", proc.ResultLines), ex);
-            }
         }
-        private static string GetLine(ICollection<string> list)
-        {
-            return list.Single(s => s != null && s.Trim('\r', '\n', ' ', '\t') != "").Trim('\r', '\n', ' ', '\t');
-        }
-
-        private static IEnumerable<string> GetLines(ICollection<string> list)
-        {
-            return list.Where(s => s != null).Select(s => s.Trim('\r', '\n', ' ', '\t')).Where(s => !string.IsNullOrWhiteSpace(s));
-        }
-
-        private async Task ConcatMultipleFiles(Job.FilesGroup step, double done, double totalSec, Action<int> progress)
+        private async Task ConcatMultipleFiles(FilesGroup step, double done, double totalSec, Action<int> progress)
         {
             var concatFiles = new List<string>();
             var filesToDelete = new List<string>();
@@ -106,9 +100,10 @@ namespace JoinerSplitter
 
                     var tempargs = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{newfile}\"");
                     Debug.WriteLine(tempargs);
-                    var tempproc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done), tempargs);
-
-                    await tempproc.Task;
+                    using (var tempproc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done), tempargs))
+                    {
+                        await tempproc;
+                    }
 
                     done += file.CutDuration;
                     concatFiles.Add(newfile);
@@ -117,9 +112,10 @@ namespace JoinerSplitter
 
             var concatFile = await CreateConcatFile(concatFiles);
 
-            var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done), $"-f concat -i \"{concatFile}\" -c copy -y {step.FilePath}");
-
-            await proc.Task;
+            using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done), $"-f concat -i \"{concatFile}\" -c copy -y {step.FilePath}"))
+            {
+                await proc;
+            }
 
             File.Delete(concatFile);
             foreach (var file in filesToDelete)
@@ -143,29 +139,31 @@ namespace JoinerSplitter
             var args = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{filePath}\"");
             Debug.WriteLine(args);
 
-            var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done, 2), args);
-
-            await proc.Task;
+            using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done, 2), args))
+            {
+                await proc;
+            }
         }
 
-        private ProcessTask StartProcess(string command, params string[] arguments)
+        private static Task<ProcessResult> StartProcess(string command, params string[] arguments)
         {
             return StartProcess(command, ProcessPriorityClass.Normal, new ProcessTaskParams(), null, arguments);
         }
 
-        private ProcessTask StartProcess(string command, Action<string> progress, params string[] arguments)
+        private static Task<ProcessResult> StartProcess(string command, Action<string> progress, params string[] arguments)
         {
             return StartProcess(command, ProcessPriorityClass.Normal, new ProcessTaskParams(), progress, arguments);
         }
 
-        private ProcessTask StartProcess(string command, int resultLimit, params string[] arguments)
+        private static Task<ProcessResult> StartProcess(string command, int resultLimit, params string[] arguments)
         {
             var pars = new ProcessTaskParams { ResultLinesLimit = resultLimit };
 
             return StartProcess(command, ProcessPriorityClass.Normal, pars, null, arguments);
         }
 
-        private ProcessTask StartProcess(string command, ProcessPriorityClass priorityClass, ProcessTaskParams parameters, Action<string> progress, params string[] arguments)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
+        private static Task<ProcessResult> StartProcess(string command, ProcessPriorityClass priorityClass, ProcessTaskParams parameters, Action<string> progress, params string[] arguments)
         {
             var proc = new Process
             {
@@ -183,20 +181,21 @@ namespace JoinerSplitter
                 EnableRaisingEvents = true
             };
 
-            var exited = new TaskCompletionSource<bool>();
-            var result = new ProcessTask(proc, exited.Task, parameters);
+            var exited = new TaskCompletionSource<ProcessResult>();
+            var result = new ProcessResult(proc, parameters);
 
             proc.Exited += (sender, args) =>
             {
                 var exitcode = proc.ExitCode;
                 if (exitcode == 0)
                 {
-                    exited.SetResult(true);
+                    exited.SetResult(result);
                 }
                 else
                 {
-                    exited.TrySetException(new Exception(string.Join("\r\n", result.ErrorLines)));
+                    exited.TrySetException(new InvalidOperationException(string.Join("\r\n", result.ErrorLines)));
                 }
+                proc.Dispose();
             };
             proc.ErrorDataReceived += (sender, args) =>
             {
@@ -216,10 +215,10 @@ namespace JoinerSplitter
             proc.PriorityClass = priorityClass;
             proc.BeginErrorReadLine();
             proc.BeginOutputReadLine();
-            return result;
+            return exited.Task;
         }
 
-        private void UpdateProgress(Action<int> progress, string str, double totalSec, double done, double coef = 1)
+        private static void UpdateProgress(Action<int> progress, string str, double totalSec, double done, double coef = 1)
         {
             var m = timeExtract.Match(str);
             if (m.Success)
@@ -228,20 +227,52 @@ namespace JoinerSplitter
                 progress?.Invoke((int)((done + time * coef) * 100 / (2 * totalSec)));
             }
         }
-        private class ProcessTask
+        private class ProcessResult : IDisposable
         {
             public LinkedList<string> ErrorLines = new LinkedList<string>();
             public ProcessTaskParams parameters;
             public Process Process;
             public LinkedList<string> ResultLines = new LinkedList<string>();
-            public Task Task;
 
-            public ProcessTask(Process proc, Task t, ProcessTaskParams parameters)
+            public ProcessResult(Process proc, ProcessTaskParams parameters)
             {
                 this.parameters = parameters;
                 Process = proc;
-                Task = t;
             }
+
+            public string GetLine()
+            {
+                return ResultLines.Single(s => !string.IsNullOrWhiteSpace(s)).Trim();
+            }
+
+            public IEnumerable<string> GetLines()
+            {
+                return ResultLines.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim());
+            }
+
+            #region IDisposable Support
+            private bool disposedValue = false; // To detect redundant calls
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (!disposedValue)
+                {
+                    if (disposing)
+                    {
+                        Process.Dispose();
+                    }
+
+                    disposedValue = true;
+                }
+            }
+
+            // This code added to correctly implement the disposable pattern.
+            public void Dispose()
+            {
+                // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+                Dispose(true);
+            }
+            #endregion
         }
 
         private class ProcessTaskParams

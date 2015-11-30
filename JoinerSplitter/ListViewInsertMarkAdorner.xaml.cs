@@ -34,11 +34,6 @@ namespace JoinerSplitter
 #pragma warning disable RECS0018 // Comparison of floating point numbers with equality operator
         public double Offset
         {
-            get
-            {
-                return offset;
-            }
-
             set
             {
                 if (value != 0 && offset != value)

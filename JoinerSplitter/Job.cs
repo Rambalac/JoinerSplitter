@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using static System.FormattableString;
 
 namespace JoinerSplitter
 {
@@ -35,7 +36,7 @@ namespace JoinerSplitter
                 if (Files.Select(f => f.GroupIndex).Distinct().Count() == 1) return new FilesGroup[] { new FilesGroup(Path.Combine(folder, OutputName), Files) };
                 var noext = Path.GetFileNameWithoutExtension(OutputName);
                 var ext = Path.GetExtension(OutputName);
-                return Files.GroupBy(f => f.GroupIndex, (k, f) => new FilesGroup(Path.Combine(folder, $"{noext}_{k}{ext}"), f.ToList())).ToList();
+                return Files.GroupBy(f => f.GroupIndex, (k, f) => new FilesGroup(Path.Combine(folder, Invariant($"{noext}_{k}{ext}")), f.ToList())).ToList();
             }
         }
 
@@ -81,18 +82,6 @@ namespace JoinerSplitter
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        public class FilesGroup
-        {
-            public readonly string FilePath;
-            public readonly ICollection<VideoFile> Files;
-
-            public FilesGroup(string filePath, ICollection<VideoFile> files)
-            {
-                this.FilePath = filePath;
-                this.Files = files;
-            }
         }
     }
 }

@@ -6,13 +6,9 @@
              xmlns:local="clr-namespace:JoinerSplitter"
              mc:Ignorable="d"
              d:DesignHeight="10" d:DesignWidth="105">
-    <Grid Height="8.5" Margin="5,0,5,0">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="7*" />
-            <ColumnDefinition Width="8*" />
-        </Grid.ColumnDefinitions>
-        <Polygon Points="0,0 4,3.5 0,7" VerticalAlignment="Center" Stroke="Black" Fill="Black" Grid.ColumnSpan="2" />
+    <Grid Height="9" Margin="5,0,5,0" SnapsToDevicePixels="True">
+        <Polygon Points="0,1 4,4.5 0,8" VerticalAlignment="Center" Stroke="Black" Fill="Black" Grid.ColumnSpan="2" />
         <Line X2="1" Stretch="Fill" VerticalAlignment="Center" Stroke="Black" StrokeThickness="1" Grid.ColumnSpan="2" />
-        <Polygon Points="0,0 -4,3.5 0,7" VerticalAlignment="Center" HorizontalAlignment="Right" Stroke="Black" Fill="Black" Grid.Column="1" />
+        <Polygon Points="0,1 -4,4.5 0,8" VerticalAlignment="Center" HorizontalAlignment="Right" Stroke="Black" Fill="Black" Grid.Column="1" />
     </Grid>
 </UserControl>

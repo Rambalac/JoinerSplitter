@@ -18,7 +18,10 @@ namespace JoinerSplitter
         {
             var dlg = new ProgressWindow();
             dlg.Owner = owner;
-            dlg.wasEnabled = owner.IsEnabled;
+            if (owner != null)
+            {
+                dlg.wasEnabled = owner.IsEnabled;
+            }
 
             dlg.Show();
             return dlg;
@@ -26,7 +29,10 @@ namespace JoinerSplitter
 
         protected override void OnClosed(EventArgs e)
         {
-            Owner.IsEnabled = wasEnabled;
+            if (Owner != null)
+            {
+                Owner.IsEnabled = wasEnabled;
+            }
             base.OnClosed(e);
         }
     }
