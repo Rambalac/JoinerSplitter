@@ -16,8 +16,8 @@ namespace JoinerSplitter
 
         public FilesGroup(string filePath, ICollection<VideoFile> files)
         {
-            this.FilePath = filePath;
-            this.Files = files;
+            FilePath = filePath;
+            Files = files;
         }
     }
 }

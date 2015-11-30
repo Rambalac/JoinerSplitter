@@ -17,7 +17,7 @@ namespace JoinerSplitter
 
         public AppModel()
         {
-            CurrentJob = new Job();
+            currentJob = new Job();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -247,7 +247,7 @@ namespace JoinerSplitter
 
             var newFile = new VideoFile(CurrentFile)
             {
-                Start = splitTime - 0.01,
+                Start = splitTime,
                 GroupIndex = CurrentFile.GroupIndex + 1
             };
 

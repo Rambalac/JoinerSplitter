@@ -417,15 +417,15 @@ namespace JoinerSplitter
         private async void processButton_Click(object sender, RoutedEventArgs e)
         {
             var job = Data.CurrentJob;
-            var progress = ProgressWindow.Show(this);
+            var progress = ProgressWindow.Show(this, job.Files.Sum(f => f.CutDuration));
 
             try
             {
-                await FFMpeg.Instance.DoJob(job, (p) =>
+                await FFMpeg.Instance.DoJob(job, (cur) =>
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        progress.progress.Value = p;
+                        progress.progress.Value = cur;
                     });
                 });
             }

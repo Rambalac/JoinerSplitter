@@ -14,7 +14,7 @@ namespace JoinerSplitter
         {
             InitializeComponent();
         }
-        public static ProgressWindow Show(Window owner)
+        public static ProgressWindow Show(Window owner, double total = 100)
         {
             var dlg = new ProgressWindow();
             dlg.Owner = owner;
@@ -22,7 +22,7 @@ namespace JoinerSplitter
             {
                 dlg.wasEnabled = owner.IsEnabled;
             }
-
+            dlg.progress.Maximum = total;
             dlg.Show();
             return dlg;
         }

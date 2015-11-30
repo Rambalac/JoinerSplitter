@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using static System.FormattableString;
 
@@ -28,24 +29,6 @@ namespace JoinerSplitter
         public async Task DoJob(Job job)
         {
             await DoJob(job, null);
-        }
-
-        public async Task DoJob(Job job, Action<int> progress)
-        {
-            var totalSec = job.Files.Sum(f => f.Duration);
-            double done = 0;
-            var groups = job.FileGroups.ToList();
-            var error = groups.Join(job.Files, g => g.FilePath, f => f.FilePath, (g, f) => g.FilePath);
-            if (error.Any()) throw new ArgumentException("Some output file names are the same as one of inputs:\r\n" + string.Join("\r\n", error.Select(s => "  " + s)));
-
-            foreach (var step in groups)
-            {
-                if (step.Files.Count() > 1)
-                    await ConcatMultipleFiles(step, done, totalSec, progress);
-                else
-                    await CutOneFile(step.Files.Single(), step.FilePath, done, totalSec, progress);
-                done += step.Files.Sum(f => f.CutDuration);
-            }
         }
 
         public async Task<double> GetDuration(string filePath)
@@ -84,15 +67,49 @@ namespace JoinerSplitter
                 }
             }
         }
-        private async Task ConcatMultipleFiles(FilesGroup step, double done, double totalSec, Action<int> progress)
+
+        public async Task DoJob(Job job, Action<double> progressUpdate)
+        {
+            var groups = job.FileGroups.ToList();
+            var error = groups.Join(job.Files, g => g.FilePath, f => f.FilePath, (g, f) => g.FilePath);
+            if (error.Any()) throw new ArgumentException("Some output file names are the same as one of inputs:\r\n" + string.Join("\r\n", error.Select(s => "  " + s)));
+
+
+            var tasks = new List<Task>();
+            var progress = new ParallelProgressRoot(progressUpdate);
+
+            foreach (var step in groups)
+            {
+                var stepDuration = step.Files.Sum(f => f.CutDuration);
+                Task task;
+                if (step.Files.Count() > 1)
+                {
+                    var subprogress = new ParallelProgressContainer();
+                    progress.Add(subprogress);
+                    task = ConcatMultipleFiles(step, subprogress);
+                }
+                else
+                {
+                    var subprogress = new ParallelProgressChild();
+                    progress.Add(subprogress);
+                    task = CutOneFile(step.Files.Single(), step.FilePath, subprogress);
+                }
+                tasks.Add(task);
+            }
+
+            await Task.WhenAll(tasks.ToArray());
+        }
+
+        private async Task ConcatMultipleFiles(FilesGroup step, ParallelProgressContainer progress)
         {
             var concatFiles = new List<string>();
+            var tasks = new List<Task>();
             var filesToDelete = new List<string>();
+            var doneLock = new object();
             foreach (var file in step.Files)
-                if (Math.Abs(file.CutDuration - file.Duration) < 0.0001)
+                if (Math.Abs(file.CutDuration - file.Duration) < 0.001)
                 {
                     concatFiles.Add(file.FilePath);
-                    done += file.Duration;
                 }
                 else
                 {
@@ -100,19 +117,30 @@ namespace JoinerSplitter
 
                     var tempargs = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{newfile}\"");
                     Debug.WriteLine(tempargs);
-                    using (var tempproc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done), tempargs))
-                    {
-                        await tempproc;
-                    }
 
-                    done += file.CutDuration;
-                    concatFiles.Add(newfile);
+                    var cutprogress = new ParallelProgressChild();
+                    progress.Add(cutprogress);
+
+                    var tempproc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, cutprogress, 0.5), tempargs);
+                    var FileCutDuration = file.CutDuration;
+
+                    var task = tempproc.ContinueWith((t) =>
+                     {
+                         t.Result.Dispose();
+                     });
                     filesToDelete.Add(newfile);
+                    concatFiles.Add(newfile);
+                    tasks.Add(task);
                 }
+
+            await Task.WhenAll(tasks.ToArray());
 
             var concatFile = await CreateConcatFile(concatFiles);
 
-            using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done), $"-f concat -i \"{concatFile}\" -c copy -y {step.FilePath}"))
+            var subprogress = new ParallelProgressChild();
+            progress.Add(subprogress);
+
+            using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, subprogress, 0.5), $"-f concat -i \"{concatFile}\" -c copy -y {step.FilePath}"))
             {
                 await proc;
             }
@@ -134,12 +162,12 @@ namespace JoinerSplitter
             return result;
         }
 
-        private async Task CutOneFile(VideoFile file, string filePath, double done, double totalSec, Action<int> progress)
+        private async Task CutOneFile(VideoFile file, string filePath, ParallelProgressChild progress)
         {
             var args = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{filePath}\"");
             Debug.WriteLine(args);
 
-            using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(progress, str, totalSec, done, 2), args))
+            using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, progress), args))
             {
                 await proc;
             }
@@ -218,13 +246,13 @@ namespace JoinerSplitter
             return exited.Task;
         }
 
-        private static void UpdateProgress(Action<int> progress, string str, double totalSec, double done, double coef = 1)
+        private static void UpdateProgress(string str, ParallelProgressChild progress, double coef = 1)
         {
             var m = timeExtract.Match(str);
             if (m.Success)
             {
                 var time = TimeSpan.Parse(m.Groups["time"].Value, CultureInfo.InvariantCulture).TotalSeconds;
-                progress?.Invoke((int)((done + time * coef) * 100 / (2 * totalSec)));
+                progress.Update(time * coef);
             }
         }
         private class ProcessResult : IDisposable

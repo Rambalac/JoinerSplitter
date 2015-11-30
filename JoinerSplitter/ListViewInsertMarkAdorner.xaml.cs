@@ -24,7 +24,7 @@ namespace JoinerSplitter
 
         public ListViewInsertMarkAdorner(Control adornedElement) : base(adornedElement)
         {
-            this.view = new ListViewInsertMarkAdornerView();
+            view = new ListViewInsertMarkAdornerView();
             //view = new Rectangle { Fill = new SolidColorBrush(Colors.Black) };
             view.Width = adornedElement.RenderSize.Width;
             //view.Height = adornedElement.RenderSize.Height;

@@ -81,6 +81,7 @@
       <DependentUpon>ListViewInsertMarkAdorner.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ParallelProgress.cs" />
     <Compile Include="ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
     </Compile>
