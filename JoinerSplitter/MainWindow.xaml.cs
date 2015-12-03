@@ -200,28 +200,25 @@ namespace JoinerSplitter
 
         private async void filesList_Drop(object sender, DragEventArgs e)
         {
-            using (var d = Dispatcher.DisableProcessing())
+            if (insertAdorner != null)
             {
-                if (insertAdorner != null)
+                VideoFile before;
+                int groupIndex;
+                GetBeforeAndGroup(e.GetPosition(filesList), out before, out groupIndex);
+
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 {
-                    VideoFile before;
-                    int groupIndex;
-                    GetBeforeAndGroup(e.GetPosition(filesList), out before, out groupIndex);
-
-                    if (e.Data.GetDataPresent(DataFormats.FileDrop))
-                    {
-                        var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                        await addFiles(files, before, groupIndex);
-                    }
-                    else if (e.Data.GetDataPresent(typeof(VideoFile[])))
-                    {
-                        var files = (VideoFile[])e.Data.GetData(typeof(VideoFile[]));
-                        moveFiles(files, before, groupIndex);
-                    }
-
-                    AdornerLayer.GetAdornerLayer(filesList).Remove(insertAdorner);
-                    insertAdorner = null;
+                    var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                    await addFiles(files, before, groupIndex);
                 }
+                else if (e.Data.GetDataPresent(typeof(VideoFile[])))
+                {
+                    var files = (VideoFile[])e.Data.GetData(typeof(VideoFile[]));
+                    moveFiles(files, before, groupIndex);
+                }
+
+                AdornerLayer.GetAdornerLayer(filesList).Remove(insertAdorner);
+                insertAdorner = null;
             }
         }
 

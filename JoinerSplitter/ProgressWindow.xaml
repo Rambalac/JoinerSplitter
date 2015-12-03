@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JoinerSplitter"
         mc:Ignorable="d"
-        Title="Progress" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" ShowInTaskbar="False" Topmost="True" WindowStyle="None">
+        Title="Progress" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" ShowInTaskbar="False" WindowStyle="None">
     <Border Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1">
         <Grid>
             <Grid.ColumnDefinitions>

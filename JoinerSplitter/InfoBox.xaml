@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JoinerSplitter"
         mc:Ignorable="d"
-        Title="InfoBox" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" ShowInTaskbar="False" Topmost="True" WindowStyle="None">
+        Title="InfoBox" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" ShowInTaskbar="False" WindowStyle="None">
     <Border Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1">
         <TextBlock x:Name="textBlock" TextWrapping="Wrap" Margin="10" />
     </Border>
