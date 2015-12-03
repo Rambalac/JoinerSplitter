@@ -45,7 +45,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_BD3044B47E2C6F3B5759CAFCFF8FECAC"
+        "MsmKey" = "8:_C0A550121E7EB9FF3692BC5D1A559DD0"
         "OwnerKey" = "8:_EC44D482818541A1B807383B3FF3F04D"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -82,7 +82,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_BD3044B47E2C6F3B5759CAFCFF8FECAC"
+        "OwnerKey" = "8:_C0A550121E7EB9FF3692BC5D1A559DD0"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -266,14 +266,14 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_BD3044B47E2C6F3B5759CAFCFF8FECAC"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_C0A550121E7EB9FF3692BC5D1A559DD0"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:Xceed.Wpf.Toolkit, Version=2.5.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_BD3044B47E2C6F3B5759CAFCFF8FECAC"
+                    "_C0A550121E7EB9FF3692BC5D1A559DD0"
                     {
                     "Name" = "8:Xceed.Wpf.Toolkit.dll"
                     "Attributes" = "3:512"
@@ -415,15 +415,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:JoinerSplitter"
-        "ProductCode" = "8:{71EAB25D-C2E0-4B10-8EFE-DAD6FF7CD218}"
-        "PackageCode" = "8:{FC8EEAA0-147A-477D-818D-D35F4DCCD33A}"
+        "ProductCode" = "8:{8BDF799B-8EA7-4878-8EDF-B98DA84112C7}"
+        "PackageCode" = "8:{2227DA50-9BAE-470E-8DFB-64C49CEE8FDB}"
         "UpgradeCode" = "8:{22295F9C-F8CC-4D23-B355-5CB10AD0E5E5}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.2"
+        "ProductVersion" = "8:1.0.3"
         "Manufacturer" = "8:Rambalac"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://github.com/Rambalac/JoinerSplitter"
