@@ -25,7 +25,7 @@ namespace JoinerSplitter
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static readonly string[] allowedExtensions = { "mov", "mp4", "avi", "wmv", "mkv" };
+        private static readonly string[] allowedExtensions = { "mov", "mp4", "avi", "wmv", "mkv", "mts", "m2ts" };
         private static readonly string dialogFilterString = Invariant($"Video files|{string.Join(";", allowedExtensions.Select(s => "*." + s))}|All files|*.*");
         private static readonly char[] prohibitedFilenameChars = { '\\', '/', ':', '*', '?', '\"', '<', '>', '|' };
         private bool changingSlider = false;
@@ -135,14 +135,29 @@ namespace JoinerSplitter
 
         private void Button_SelEnd(object sender, RoutedEventArgs e)
         {
-            var splitTime = Data.CurrentFile.KeyFrames?.Where(f => f >= slider.Value).DefaultIfEmpty(Data.CurrentFile.Duration).First() ?? slider.Value;
-            slider.SelectionEnd = splitTime;
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+            {
+                slider.SelectionEnd = slider.Value;
+            }
+            else
+            {
+                var splitTime = Data.CurrentFile.KeyFrames?.Where(f => f >= slider.Value).DefaultIfEmpty(Data.CurrentFile.Duration).First() ?? slider.Value;
+                slider.SelectionEnd = splitTime;
+            }
         }
 
         private void Button_SelStart(object sender, RoutedEventArgs e)
         {
-            var splitTime = Data.CurrentFile.KeyFrames?.Where(f => f <= slider.Value).DefaultIfEmpty(0).Last() ?? slider.Value;
-            slider.SelectionStart = splitTime - 0.1;
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+            {
+                slider.SelectionStart = slider.Value;
+            }
+            else
+            {
+                var splitTime = Data.CurrentFile.KeyFrames?.Where(f => f <= slider.Value).DefaultIfEmpty(0).Last() ?? slider.Value;
+                slider.SelectionStart = splitTime - 0.1;
+            }
+
         }
 
         private void Button_SplitFiles(object sender, RoutedEventArgs e)

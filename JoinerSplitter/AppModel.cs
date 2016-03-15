@@ -249,13 +249,11 @@ namespace JoinerSplitter
             var newFile = new VideoFile(CurrentFile)
             {
                 Start = splitTime,
-                GroupIndex = CurrentFile.GroupIndex + 1
+                GroupIndex = CurrentFile.GroupIndex
             };
 
             CurrentFile.End = splitTime;
             CurrentJob.Files.Insert(currentIndex + 1, newFile);
-            for (var i = currentIndex + 2; i < CurrentJob.Files.Count; i++)
-                CurrentJob.Files[i].GroupIndex += 1;
         }
 
         public void SplitGroup()
