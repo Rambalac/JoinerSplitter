@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -31,9 +31,17 @@ namespace JoinerSplitter
         {
             get
             {
-                if (!Files.Any()) return new FilesGroup[] { };
+                if (!Files.Any())
+                {
+                    return new FilesGroup[] { };
+                }
+
                 var folder = OutputFolder ?? Path.GetDirectoryName(Files.First().FilePath);
-                if (Files.Select(f => f.GroupIndex).Distinct().Count() == 1) return new FilesGroup[] { new FilesGroup(Path.Combine(folder, OutputName), Files) };
+                if (Files.Select(f => f.GroupIndex).Distinct().Count() == 1)
+                {
+                    return new FilesGroup[] { new FilesGroup(Path.Combine(folder, OutputName), Files) };
+                }
+
                 var noext = Path.GetFileNameWithoutExtension(OutputName);
                 var ext = Path.GetExtension(OutputName);
                 return Files.GroupBy(f => f.GroupIndex, (k, f) => new FilesGroup(Path.Combine(folder, Invariant($"{noext}_{k}{ext}")), f.ToList())).ToList();
@@ -44,7 +52,7 @@ namespace JoinerSplitter
 
         public bool HasMoreGroupsThanOne => Files.Select(f => f.GroupIndex).Distinct().Count() > 1;
 
-        public string JobFilePath { get; set; } = "";
+        public string JobFilePath { get; set; } = string.Empty;
 
         public string OutputFolder
         {

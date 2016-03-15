@@ -123,8 +123,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DoubleTimeSpanToString.cs" />
+    <Compile Include="DoubleToTimeSpan.cs" />
     <Compile Include="FilesGroup.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="InfoBox.xaml.cs">
       <DependentUpon>InfoBox.xaml</DependentUpon>
     </Compile>
@@ -132,7 +132,11 @@
       <DependentUpon>ListViewInsertMarkAdorner.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ListViewInsertMarkAdornerView.cs" />
     <Compile Include="ParallelProgress.cs" />
+    <Compile Include="ParallelProgressChild.cs" />
+    <Compile Include="ParallelProgressContainer.cs" />
+    <Compile Include="ParallelProgressRoot.cs" />
     <Compile Include="ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
     </Compile>
@@ -191,6 +195,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="stylecop.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -235,7 +240,11 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\Newtonsoft.Json.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="ffmpeg\avcodec-57.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

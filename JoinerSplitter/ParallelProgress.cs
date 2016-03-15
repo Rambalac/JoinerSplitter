@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,81 +9,10 @@ namespace JoinerSplitter
 {
     public abstract class ParallelProgress
     {
-        internal ParallelProgressRoot root = null;
-        internal bool done = false;
-
         internal abstract double Current { get; }
-    }
 
-    public class ParallelProgressContainer : ParallelProgress
-    {
-        private readonly ConcurrentBag<ParallelProgress> children = new ConcurrentBag<ParallelProgress>();
-        double total;
+        internal bool Done { get; set; } = false;
 
-        internal override double Current
-        {
-            get
-            {
-                if (done) return total;
-                double sum=children.Sum(p => p.Current);
-                if (children.All(c=>done))
-                {
-                    total = sum;
-                    done = true;
-                }
-
-                return sum;
-            }
-        }
-        public void Add(ParallelProgress p)
-        {
-            children.Add(p);
-            p.root = root;
-        }
-
-    }
-
-    public class ParallelProgressRoot : ParallelProgressContainer
-    {
-        private readonly Action<double> ProgressUpdate;
-        public ParallelProgressRoot(Action<double> progressUpdate)
-        {
-            ProgressUpdate = progressUpdate;
-            root = this;
-        }
-
-        internal void Update()
-        {
-            ProgressUpdate(Current);
-        }
-    }
-
-    public class ParallelProgressChild : ParallelProgress
-    {
-        private double current = 0;
-        internal override double Current
-        {
-            get
-            {
-                lock (this)
-                {
-                    return current;
-                }
-            }
-        }
-
-        public void Update(double current)
-        {
-            lock (this)
-            {
-                this.current = current;
-            }
-            root.Update();
-        }
-
-        public void Done()
-        {
-            done = true;
-        }
+        internal ParallelProgressRoot Root { get; set; } = null;
     }
 }

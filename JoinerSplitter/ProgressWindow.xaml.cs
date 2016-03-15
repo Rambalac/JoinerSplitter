@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 
 namespace JoinerSplitter
@@ -14,6 +14,7 @@ namespace JoinerSplitter
         {
             InitializeComponent();
         }
+
         public static ProgressWindow Show(Window owner, double total = 100)
         {
             var dlg = new ProgressWindow();
@@ -22,6 +23,7 @@ namespace JoinerSplitter
             {
                 dlg.wasEnabled = owner.IsEnabled;
             }
+
             dlg.progress.Maximum = total;
             dlg.Show();
             return dlg;
@@ -33,6 +35,7 @@ namespace JoinerSplitter
             {
                 Owner.IsEnabled = wasEnabled;
             }
+
             base.OnClosed(e);
         }
     }

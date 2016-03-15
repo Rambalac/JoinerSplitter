@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 
 namespace JoinerSplitter
@@ -14,6 +14,7 @@ namespace JoinerSplitter
         {
             InitializeComponent();
         }
+
         public static InfoBox Show(Window owner, string text)
         {
             var dlg = new InfoBox();
@@ -24,6 +25,7 @@ namespace JoinerSplitter
                 dlg.wasEnabled = owner.IsEnabled;
                 owner.IsEnabled = false;
             }
+
             dlg.Show();
             return dlg;
         }
@@ -34,6 +36,7 @@ namespace JoinerSplitter
             {
                 Owner.IsEnabled = wasEnabled;
             }
+
             base.OnClosed(e);
         }
     }

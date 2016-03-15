@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -25,23 +25,25 @@ namespace JoinerSplitter
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static readonly string[] allowedExtensions = { "mov", "mp4", "avi", "wmv", "mkv", "mts", "m2ts" };
-        private static readonly string dialogFilterString = Invariant($"Video files|{string.Join(";", allowedExtensions.Select(s => "*." + s))}|All files|*.*");
-        private static readonly char[] prohibitedFilenameChars = { '\\', '/', ':', '*', '?', '\"', '<', '>', '|' };
+        private static readonly string[] AllowedExtensions = { "mov", "mp4", "avi", "wmv", "mkv", "mts", "m2ts" };
+        private static readonly string DialogFilterString = Invariant($"Video files|{string.Join(";", AllowedExtensions.Select(s => "*." + s))}|All files|*.*");
+        private static readonly char[] ProhibitedFilenameChars = { '\\', '/', ':', '*', '?', '\"', '<', '>', '|' };
         private bool changingSlider = false;
         private Point? dragStartPoint;
         private ListViewInsertMarkAdorner insertAdorner;
         private Storyboard storyboard;
         private bool wasPaused;
+
         public MainWindow()
         {
             InitializeComponent();
-            DataObject.AddPastingHandler(outputFilenameBox, outputFilenameBox_Paste);
+            DataObject.AddPastingHandler(outputFilenameBox, OutputFilenameBox_Paste);
             FFMpeg.Instance.FFMpegPath = Path.Combine(Environment.CurrentDirectory, "ffmpeg\\ffmpeg.exe");
             FFMpeg.Instance.FFProbePath = Path.Combine(Environment.CurrentDirectory, "ffmpeg\\ffprobe.exe");
         }
 
         private AppModel Data => (AppModel)DataContext;
+
         public static ContentControl GetItemAt(Visual listView, Point point)
         {
             var hitTestResult = VisualTreeHelper.HitTest(listView, point);
@@ -49,13 +51,20 @@ namespace JoinerSplitter
             while (item != null)
             {
                 var listViewItem = item as ListViewItem;
-                if (listViewItem != null) return listViewItem;
+                if (listViewItem != null)
+                {
+                    return listViewItem;
+                }
 
                 var groupItem = item as GroupItem;
-                if (groupItem != null) return groupItem;
+                if (groupItem != null)
+                {
+                    return groupItem;
+                }
 
                 item = VisualTreeHelper.GetParent(item);
             }
+
             return null;
         }
 
@@ -72,7 +81,7 @@ namespace JoinerSplitter
                         0) as Control).ActualHeight;
         }
 
-        private async Task addFiles(string[] files, VideoFile before = null, int groupIndex = -1)
+        private async Task AddFiles(string[] files, VideoFile before = null, int groupIndex = -1)
         {
             var infobox = InfoBox.Show(this, "Retrieving video files details...");
 
@@ -90,10 +99,14 @@ namespace JoinerSplitter
 
         private async void Button_AddVideo(object sender, RoutedEventArgs e)
         {
-            var dlg = new OpenFileDialog { Filter = dialogFilterString, Multiselect = true };
+            var dlg = new OpenFileDialog { Filter = DialogFilterString, Multiselect = true };
             var result = dlg.ShowDialog();
-            if (result == false) return;
-            await addFiles(dlg.FileNames);
+            if (result == false)
+            {
+                return;
+            }
+
+            await AddFiles(dlg.FileNames);
         }
 
         private void Button_Delete(object sender, RoutedEventArgs e)
@@ -128,14 +141,18 @@ namespace JoinerSplitter
         private void Button_Play(object sender, RoutedEventArgs e)
         {
             if (storyboard.GetIsPaused(mainGrid))
+            {
                 storyboard.Resume(mainGrid);
+            }
             else
+            {
                 storyboard.Pause(mainGrid);
+            }
         }
 
         private void Button_SelEnd(object sender, RoutedEventArgs e)
         {
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
                 slider.SelectionEnd = slider.Value;
             }
@@ -157,7 +174,6 @@ namespace JoinerSplitter
                 var splitTime = Data.CurrentFile.KeyFrames?.Where(f => f <= slider.Value).DefaultIfEmpty(0).Last() ?? slider.Value;
                 slider.SelectionStart = splitTime - 0.1;
             }
-
         }
 
         private void Button_SplitFiles(object sender, RoutedEventArgs e)
@@ -171,7 +187,7 @@ namespace JoinerSplitter
             Seek(TimeSpan.FromSeconds(slider.SelectionStart));
         }
 
-        private void filesList_DragEnter(object sender, DragEventArgs e)
+        private void FilesList_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop) || e.Data.GetDataPresent(typeof(VideoFile[])))
             {
@@ -180,7 +196,7 @@ namespace JoinerSplitter
             }
         }
 
-        private void filesList_DragLeave(object sender, DragEventArgs e)
+        private void FilesList_DragLeave(object sender, DragEventArgs e)
         {
             if (insertAdorner != null)
             {
@@ -189,7 +205,7 @@ namespace JoinerSplitter
             }
         }
 
-        private void filesList_DragOver(object sender, DragEventArgs e)
+        private void FilesList_DragOver(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.None;
             if (insertAdorner != null)
@@ -215,7 +231,7 @@ namespace JoinerSplitter
             }
         }
 
-        private async void filesList_Drop(object sender, DragEventArgs e)
+        private async void FilesList_Drop(object sender, DragEventArgs e)
         {
             if (insertAdorner != null)
             {
@@ -226,12 +242,12 @@ namespace JoinerSplitter
                 if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 {
                     var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                    await addFiles(files, before, groupIndex);
+                    await AddFiles(files, before, groupIndex);
                 }
                 else if (e.Data.GetDataPresent(typeof(VideoFile[])))
                 {
                     var files = (VideoFile[])e.Data.GetData(typeof(VideoFile[]));
-                    moveFiles(files, before, groupIndex);
+                    MoveFiles(files, before, groupIndex);
                 }
 
                 AdornerLayer.GetAdornerLayer(filesList).Remove(insertAdorner);
@@ -239,13 +255,13 @@ namespace JoinerSplitter
             }
         }
 
-        private void filesList_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void FilesList_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             dragStartPoint = e.GetPosition(null);
             e.Handled = true;
         }
 
-        private void filesList_MouseMove(object sender, MouseEventArgs e)
+        private void FilesList_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed && dragStartPoint != null)
             {
@@ -260,7 +276,7 @@ namespace JoinerSplitter
             }
         }
 
-        private void filesList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void FilesList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             using (var d = Dispatcher.DisableProcessing())
             {
@@ -275,28 +291,42 @@ namespace JoinerSplitter
                             if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                             {
                                 if (filesList.SelectedItems.Contains(selected))
+                                {
                                     filesList.SelectedItems.Remove(selected);
+                                }
                                 else
+                                {
                                     filesList.SelectedItems.Add(selected);
+                                }
                             }
                             else if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
                             {
                                 var start = Data.CurrentJob.Files.IndexOf((VideoFile)filesList.SelectedItem);
                                 var count = Data.CurrentJob.Files.IndexOf(selected) - start;
-                                if (count < 0) { start += count; count = -count; }
+                                if (count < 0)
+                                {
+                                    start += count;
+                                    count = -count;
+                                }
 
                                 filesList.SelectedItems.Clear();
                                 foreach (var item in Data.CurrentJob.Files.Skip(start).Take(count + 1).ToList())
+                                {
                                     filesList.SelectedItems.Add(item);
+                                }
                             }
                             else
                             {
                                 if (filesList.SelectedItems.Count > 1)
+                                {
                                     filesList.SelectedItems.Clear();
+                                }
+
                                 filesList.SelectedItem = selected;
                             }
                         }
                     }
+
                     dragStartPoint = null;
                 }
             }
@@ -307,7 +337,10 @@ namespace JoinerSplitter
             var result = GetItemAt(filesList, point);
             before = null;
             groupIndex = -1;
-            if (result == null) return;
+            if (result == null)
+            {
+                return;
+            }
 
             var listItem = result as ListViewItem;
             if (listItem != null)
@@ -318,26 +351,38 @@ namespace JoinerSplitter
             }
 
             var group = result as GroupItem;
-            if (group == null) return;
+            if (group == null)
+            {
+                return;
+            }
 
             var items = (group.Content as CollectionViewGroup).Items;
             before = items.FirstOrDefault() as VideoFile;
             groupIndex = before.GroupIndex - 1;
-            if (groupIndex < 0) groupIndex = 0;
+            if (groupIndex < 0)
+            {
+                groupIndex = 0;
+            }
         }
 
         private VideoFile GetItem(Point point)
         {
             var result = GetItemAt(filesList, point);
-            if (result == null) return null;
+            if (result == null)
+            {
+                return null;
+            }
 
             var listItem = result as ListViewItem;
             if (listItem != null)
+            {
                 return listItem.Content as VideoFile;
+            }
+
             return null;
         }
 
-        private void moveFiles(VideoFile[] files, VideoFile before, int groupIndex)
+        private void MoveFiles(VideoFile[] files, VideoFile before, int groupIndex)
         {
             Data.MoveFiles(files, before, groupIndex);
             RefreshList();
@@ -371,7 +416,10 @@ namespace JoinerSplitter
             };
 
             var result = dlg.ShowDialog();
-            if (result == false) return;
+            if (result == false)
+            {
+                return;
+            }
 
             var infobox = InfoBox.Show(this, "Retrieving video files details...");
             await OpenJob(dlg.FileName);
@@ -386,34 +434,48 @@ namespace JoinerSplitter
             var timeline = new MediaTimeline(video.FileUri);
             storyboard.Children.Add(timeline);
             Storyboard.SetTarget(timeline, mediaElement);
-            storyboard.CurrentTimeInvalidated += storyboard_CurrentTimeInvalidated;
+            storyboard.CurrentTimeInvalidated += Storyboard_CurrentTimeInvalidated;
 
             Data.CurrentFile = video;
             storyboard.Begin(mainGrid, true);
         }
 
-        private void outputFilenameBox_Paste(object sender, DataObjectPastingEventArgs e)
+        private void OutputFilenameBox_Paste(object sender, DataObjectPastingEventArgs e)
         {
-            if (!e.DataObject.GetDataPresent(e.FormatToApply)) return;
+            if (!e.DataObject.GetDataPresent(e.FormatToApply))
+            {
+                return;
+            }
+
             string text = e.DataObject.GetData(e.FormatToApply).ToString();
-            if (prohibitedFilenameChars.Any(text.Contains)) e.CancelCommand();
+            if (ProhibitedFilenameChars.Any(text.Contains))
+            {
+                e.CancelCommand();
+            }
         }
 
-        private void outputFilenameBox_TextInput(object sender, TextCompositionEventArgs e)
+        private void OutputFilenameBox_TextInput(object sender, TextCompositionEventArgs e)
         {
-            if (prohibitedFilenameChars.Any(e.Text.Contains)) e.Handled = true;
+            if (ProhibitedFilenameChars.Any(e.Text.Contains))
+            {
+                e.Handled = true;
+            }
         }
 
-        private void outputFolderBox_MouseDown(object sender, MouseButtonEventArgs e)
+        private void OutputFolderBox_MouseDown(object sender, MouseButtonEventArgs e)
         {
             using (var dlg = new System.Windows.Forms.FolderBrowserDialog())
             {
-                if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+                if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                {
+                    return;
+                }
+
                 Data.CurrentJob.OutputFolder = dlg.SelectedPath;
             }
         }
 
-        private void outputList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OutputList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (filesList.SelectedItem != null)
             {
@@ -428,7 +490,7 @@ namespace JoinerSplitter
             }
         }
 
-        private async void processButton_Click(object sender, RoutedEventArgs e)
+        private async void ProcessButton_Click(object sender, RoutedEventArgs e)
         {
             var job = Data.CurrentJob;
             var progress = ProgressWindow.Show(this, job.Files.Sum(f => f.CutDuration));
@@ -462,9 +524,13 @@ namespace JoinerSplitter
         private async void SaveJob(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(Data.CurrentJob.JobFilePath))
+            {
                 SaveJobAs();
+            }
             else
+            {
                 await Data.SaveJob(Data.CurrentJob.JobFilePath);
+            }
         }
 
         private async void SaveJobAs(object sender = null, RoutedEventArgs e = null)
@@ -480,8 +546,12 @@ namespace JoinerSplitter
                 dlg.FileName = Path.GetFileNameWithoutExtension(Data.CurrentJob.JobFilePath);
                 dlg.InitialDirectory = Path.GetDirectoryName(Data.CurrentJob.JobFilePath);
             }
+
             var result = dlg.ShowDialog();
-            if (result == false) return;
+            if (result == false)
+            {
+                return;
+            }
 
             await Data.SaveJob(dlg.FileName);
         }
@@ -495,23 +565,25 @@ namespace JoinerSplitter
             }
             catch (InvalidOperationException)
             {
-                //Ignore if file selection happened;
+                // Ignore if file selection happened;
             }
         }
 
-        private void slider_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        private void Slider_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             wasPaused = storyboard.GetIsPaused(mainGrid);
             storyboard.Pause(mainGrid);
         }
 
-        private void slider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        private void Slider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
             if (!wasPaused)
+            {
                 storyboard.Resume(mainGrid);
+            }
         }
 
-        private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!changingSlider)
             {
@@ -519,13 +591,13 @@ namespace JoinerSplitter
             }
         }
 
-        private void splitButton_Click(object sender, RoutedEventArgs e)
+        private void SplitButton_Click(object sender, RoutedEventArgs e)
         {
             Data.SplitCurrentVideo(slider.Value);
             RefreshList();
         }
 
-        private void storyboard_CurrentTimeInvalidated(object sender, EventArgs e)
+        private void Storyboard_CurrentTimeInvalidated(object sender, EventArgs e)
         {
             changingSlider = true;
             slider.Value = (sender as ClockGroup).CurrentTime?.TotalSeconds ?? 0;

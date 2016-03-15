@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -24,6 +24,7 @@ namespace JoinerSplitter
 
         [DataMember]
         private double start;
+
         public VideoFile()
         {
         }
@@ -37,7 +38,11 @@ namespace JoinerSplitter
 
         public VideoFile(VideoFile video)
         {
-            if (video == null) throw new ArgumentNullException(nameof(video));
+            if (video == null)
+            {
+                throw new ArgumentNullException(nameof(video));
+            }
+
             filePath = video.filePath;
             duration = video.Duration;
             keyFrames = video.keyFrames;
@@ -49,7 +54,9 @@ namespace JoinerSplitter
         public event PropertyChangedEventHandler PropertyChanged;
 
         public double CutDuration => End - Start;
+
         public double Duration => duration;
+
         public double End
         {
             get
@@ -65,8 +72,11 @@ namespace JoinerSplitter
         }
 
         public string FileName => Path.GetFileName(FilePath);
+
         public string FilePath => filePath;
+
         public Uri FileUri => new Uri(FilePath);
+
         public int GroupIndex
         {
             get
@@ -82,6 +92,7 @@ namespace JoinerSplitter
         }
 
         public ICollection<double> KeyFrames => keyFrames;
+
         public double Start
         {
             get
@@ -95,10 +106,12 @@ namespace JoinerSplitter
                 OnPropertyChanged(nameof(Start));
             }
         }
+
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
@@ -110,8 +123,12 @@ namespace JoinerSplitter
                 {
                     filePath = testPath;
                 }
-                else throw new SerializationException("Video file used in job does not exist");
+                else
+                {
+                    throw new SerializationException("Video file used in job does not exist");
+                }
             }
+
             duration = FFMpeg.Instance.GetDuration(filePath).Result;
             keyFrames = FFMpeg.Instance.GetKeyFrames(filePath).Result;
         }
