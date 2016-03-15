@@ -140,7 +140,7 @@ namespace JoinerSplitter
             var subprogress = new ParallelProgressChild();
             progress.Add(subprogress);
 
-            using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, subprogress, 0.5), $"-f concat -i \"{concatFile}\" -c copy -y {step.FilePath}"))
+            using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, subprogress, 0.5), $"-f concat -i \"{concatFile}\" -c copy -y \"{step.FilePath}\""))
             {
                 await proc;
             }
