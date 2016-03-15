@@ -18,7 +18,7 @@ namespace JoinerSplitter
 
         private FFMpeg()
         {
-            
+
         }
 
         public static FFMpeg Instance { get; set; } = new FFMpeg();
@@ -40,7 +40,7 @@ namespace JoinerSplitter
 
                 try
                 {
-                    var line = proc.GetLine();
+                    var line = proc.GetLines().First();
                     return double.Parse(line, CultureInfo.InvariantCulture);
                 }
                 catch (Exception ex)

@@ -26,7 +26,7 @@ namespace JoinerSplitter
     public partial class MainWindow : Window
     {
         private static readonly string[] allowedExtensions = { "mov", "mp4", "avi", "wmv", "mkv" };
-        private static readonly string dialogFilterString = Invariant($"Video files ({string.Join(", ", allowedExtensions)})|{string.Join(";", allowedExtensions.Select(s => "*." + s))}");
+        private static readonly string dialogFilterString = Invariant($"Video files|{string.Join(";", allowedExtensions.Select(s => "*." + s))}|All files|*.*");
         private static readonly char[] prohibitedFilenameChars = { '\\', '/', ':', '*', '?', '\"', '<', '>', '|' };
         private bool changingSlider = false;
         private Point? dragStartPoint;
