@@ -37,6 +37,8 @@ namespace JoinerSplitter
         {
             InitializeComponent();
             DataObject.AddPastingHandler(outputFilenameBox, outputFilenameBox_Paste);
+            FFMpeg.Instance.FFMpegPath = Path.Combine(Environment.CurrentDirectory, "ffmpeg\\ffmpeg.exe");
+            FFMpeg.Instance.FFProbePath = Path.Combine(Environment.CurrentDirectory, "ffmpeg\\ffprobe.exe");
         }
 
         private AppModel Data => (AppModel)DataContext;

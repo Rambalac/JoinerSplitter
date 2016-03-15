@@ -236,6 +236,7 @@ namespace JoinerSplitter
                     var ser = new DataContractJsonSerializer(typeof(Job));
                     ser.WriteObject(stream, CurrentJob);
                 }
+                CurrentJob.JobFilePath = path;
             });
         }
 

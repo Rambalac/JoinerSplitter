@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Readme.md = Readme.md
 	EndProjectSection
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "JoinerSplitterSetup", "JoinerSplitterSetup\JoinerSplitterSetup.vdproj", "{B78252C7-DE5E-4A03-9D38-547783736D53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{6E79E0C5-0DC1-4764-92D6-23E582F0D5C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E79E0C5-0DC1-4764-92D6-23E582F0D5C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E79E0C5-0DC1-4764-92D6-23E582F0D5C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B78252C7-DE5E-4A03-9D38-547783736D53}.Debug|Any CPU.ActiveCfg = Debug
+		{B78252C7-DE5E-4A03-9D38-547783736D53}.Debug|Any CPU.Build.0 = Debug
+		{B78252C7-DE5E-4A03-9D38-547783736D53}.Release|Any CPU.ActiveCfg = Release
+		{B78252C7-DE5E-4A03-9D38-547783736D53}.Release|Any CPU.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -7,7 +7,7 @@
         xmlns:dat="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Class="JoinerSplitter.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="541" Width="1000">
+        Title="JoinerSplitter" Height="541" Width="1000">
     <Window.DataContext>
         <local:AppModel/>
     </Window.DataContext>

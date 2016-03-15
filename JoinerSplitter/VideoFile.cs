@@ -102,9 +102,10 @@ namespace JoinerSplitter
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
+            filePath = Path.GetFullPath(filePath);
             if (!File.Exists(filePath))
             {
-                var testPath = Path.GetFileName(filePath);
+                var testPath = Path.GetFullPath(Path.GetFileName(filePath));
                 if (File.Exists(testPath))
                 {
                     filePath = testPath;

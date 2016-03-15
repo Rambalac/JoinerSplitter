@@ -18,6 +18,7 @@ namespace JoinerSplitter
 
         private FFMpeg()
         {
+            
         }
 
         public static FFMpeg Instance { get; set; } = new FFMpeg();
