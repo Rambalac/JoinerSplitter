@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace JoinerSplitter
+﻿namespace JoinerSplitter
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+
     public class ParallelProgressChild : ParallelProgress
     {
-        private double current = 0;
+        private double current;
 
         internal override double Current
         {

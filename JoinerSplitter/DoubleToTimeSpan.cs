@@ -1,9 +1,9 @@
-using System;
-using System.Globalization;
-using System.Windows.Data;
-
 namespace JoinerSplitter
 {
+    using System;
+    using System.Globalization;
+    using System.Windows.Data;
+
     public class DoubleToTimeSpan : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

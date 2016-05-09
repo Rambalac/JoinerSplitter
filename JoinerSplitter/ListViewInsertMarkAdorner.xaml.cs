@@ -1,10 +1,10 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
-
 namespace JoinerSplitter
 {
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Documents;
+    using System.Windows.Media;
+
     internal class ListViewInsertMarkAdorner : Adorner
     {
         private double offset;

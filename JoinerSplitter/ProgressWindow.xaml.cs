@@ -1,12 +1,12 @@
-using System;
-using System.Windows;
-
 namespace JoinerSplitter
 {
+    using System;
+    using System.Windows;
+
     /// <summary>
     /// Interaction logic for ProgressWindow.xaml
     /// </summary>
-    partial class ProgressWindow : Window
+    public partial class ProgressWindow : Window
     {
         private bool wasEnabled;
 

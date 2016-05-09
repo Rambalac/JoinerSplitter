@@ -85,7 +85,7 @@
             TickPlacement="BottomRight"
             IsEnabled="{Binding HasCurrentFile}"
                 Margin="0,0,0,5"
-            ValueChanged="slider_ValueChanged" PreviewMouseDown="slider_PreviewMouseDown" PreviewMouseUp="slider_PreviewMouseUp" />
+            ValueChanged="Slider_ValueChanged" PreviewMouseDown="Slider_PreviewMouseDown" PreviewMouseUp="Slider_PreviewMouseUp" />
                 <StackPanel Orientation="Horizontal" Grid.Row="3" IsEnabled="{Binding HasCurrentFile}">
                     <Button Content="Prev" ToolBar.OverflowMode="Never" />
                     <Button ToolTip="Seek to the start of selection" Click="Button_Start">
@@ -97,7 +97,7 @@
                     <Button x:Name="playButton" ToolTip="Play/stop video" Click="Button_Play">
                         <Image Source="Icons/PlayPause.png" />
                     </Button>
-                    <Button x:Name="splitButton" ToolTip="Split selected cut to separate videos by current position" Click="splitButton_Click">
+                    <Button x:Name="splitButton" ToolTip="Split selected cut to separate videos by current position" Click="SplitButton_Click">
                         <Image Source="Icons/Cut_6523_24.png" />
                     </Button>
                     <Button ToolTip="Selection End" Click="Button_SelEnd">
@@ -133,8 +133,8 @@
             <ListView
             x:Name="filesList" Grid.Column="2" Grid.Row="1"
             ItemsSource="{Binding Source={StaticResource files}}" d:DataContext="{d:DesignInstance {x:Type local:VideoFile}}"
-            SelectionChanged="outputList_SelectionChanged" DragEnter="filesList_DragEnter" DragOver="filesList_DragOver" Drop="filesList_Drop"
-            AllowDrop="True" DragLeave="filesList_DragLeave" PreviewMouseLeftButtonDown="filesList_MouseLeftButtonDown" PreviewMouseMove="filesList_MouseMove" PreviewMouseLeftButtonUp="filesList_PreviewMouseLeftButtonUp">
+            SelectionChanged="OutputList_SelectionChanged" DragEnter="FilesList_DragEnter" DragOver="FilesList_DragOver" Drop="FilesList_Drop"
+            AllowDrop="True" DragLeave="FilesList_DragLeave" PreviewMouseLeftButtonDown="FilesList_MouseLeftButtonDown" PreviewMouseMove="FilesList_MouseMove" PreviewMouseLeftButtonUp="FilesList_PreviewMouseLeftButtonUp">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Original File" Width="110" DisplayMemberBinding="{Binding FileName}" />
@@ -163,10 +163,10 @@
                 </ListView.GroupStyle>
             </ListView>
             <TextBox x:Name="outputFolderBox" Grid.Column="2" Grid.Row="2" TextWrapping="WrapWithOverflow"  Text="{Binding CurrentJob.OutputFolder}" Tag="Output folder"
-            Style="{StaticResource WatermarkedTextBox}" IsReadOnly="True" PreviewMouseDown="outputFolderBox_MouseDown" />
+            Style="{StaticResource WatermarkedTextBox}" IsReadOnly="True" PreviewMouseDown="OutputFolderBox_MouseDown" />
             <TextBox x:Name="outputFilenameBox" Grid.Column="2" Grid.Row="3" TextWrapping="WrapWithOverflow" Text="{Binding CurrentJob.OutputName}" Tag="Output file name"
-            Style="{StaticResource WatermarkedTextBox}"  PreviewTextInput="outputFilenameBox_TextInput" />
-            <Button x:Name="processButton" Content="Export" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="4" Click="processButton_Click" />
+            Style="{StaticResource WatermarkedTextBox}"  PreviewTextInput="OutputFilenameBox_TextInput" />
+            <Button x:Name="processButton" Content="Export" HorizontalAlignment="Stretch" Grid.Column="2" Grid.Row="4" Click="ProcessButton_Click" />
         </Grid>
     </Grid>
 </Window>

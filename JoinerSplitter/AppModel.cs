@@ -1,14 +1,14 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Json;
-using System.Threading.Tasks;
-
 namespace JoinerSplitter
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.Serialization.Json;
+    using System.Threading.Tasks;
+
     public class AppModel : INotifyPropertyChanged
     {
         private VideoFile currentFile;

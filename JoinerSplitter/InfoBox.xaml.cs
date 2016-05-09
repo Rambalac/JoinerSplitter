@@ -1,8 +1,8 @@
-using System;
-using System.Windows;
-
 namespace JoinerSplitter
 {
+    using System;
+    using System.Windows;
+
     /// <summary>
     /// Interaction logic for InfoBox.xaml
     /// </summary>

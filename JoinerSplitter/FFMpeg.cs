@@ -1,16 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using static System.FormattableString;
-
 namespace JoinerSplitter
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Globalization;
+    using System.IO;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using static System.FormattableString;
+
     public class FFMpeg
     {
         // frame=   81 fps=0.0 q=-1.0 Lsize=   20952kB time = 00:00:03.09 bitrate=55455.1kbits/s
@@ -201,51 +201,61 @@ namespace JoinerSplitter
             var tasks = new List<Task>();
             var filesToDelete = new List<string>();
             var doneLock = new object();
-            foreach (var file in step.Files)
+            try
             {
-                if (Math.Abs(file.CutDuration - file.Duration) < 0.001)
+                foreach (var file in step.Files)
                 {
-                    concatFiles.Add(file.FilePath);
+                    if (Math.Abs(file.CutDuration - file.Duration) < 0.001)
+                    {
+                        concatFiles.Add(file.FilePath);
+                    }
+                    else
+                    {
+                        var newfile = Path.GetTempFileName() + Path.GetExtension(file.FilePath);
+
+                        var tempargs = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{newfile}\"");
+                        Debug.WriteLine(tempargs);
+
+                        var cutprogress = new ParallelProgressChild();
+                        progress.Add(cutprogress);
+
+                        var tempproc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, cutprogress, 0.5), tempargs);
+                        var fileCutDuration = file.CutDuration;
+
+                        var task = tempproc.ContinueWith((t) =>
+                         {
+                             t.Result.Dispose();
+                         });
+                        filesToDelete.Add(newfile);
+                        concatFiles.Add(newfile);
+                        tasks.Add(task);
+                    }
                 }
-                else
+
+                await Task.WhenAll(tasks.ToArray());
+
+                var concatFile = await CreateConcatFile(concatFiles);
+                try
                 {
-                    var newfile = Path.GetTempFileName() + Path.GetExtension(file.FilePath);
+                    var subprogress = new ParallelProgressChild();
+                    progress.Add(subprogress);
 
-                    var tempargs = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{newfile}\"");
-                    Debug.WriteLine(tempargs);
-
-                    var cutprogress = new ParallelProgressChild();
-                    progress.Add(cutprogress);
-
-                    var tempproc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, cutprogress, 0.5), tempargs);
-                    var fileCutDuration = file.CutDuration;
-
-                    var task = tempproc.ContinueWith((t) =>
-                     {
-                         t.Result.Dispose();
-                     });
-                    filesToDelete.Add(newfile);
-                    concatFiles.Add(newfile);
-                    tasks.Add(task);
+                    using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, subprogress, 0.5), $"-f concat -safe 0 -i \"{concatFile}\" -c copy -y \"{step.FilePath}\""))
+                    {
+                        await proc;
+                    }
+                }
+                finally
+                {
+                    File.Delete(concatFile);
                 }
             }
-
-            await Task.WhenAll(tasks.ToArray());
-
-            var concatFile = await CreateConcatFile(concatFiles);
-
-            var subprogress = new ParallelProgressChild();
-            progress.Add(subprogress);
-
-            using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, subprogress, 0.5), $"-f concat -i \"{concatFile}\" -c copy -y \"{step.FilePath}\""))
+            finally
             {
-                await proc;
-            }
-
-            File.Delete(concatFile);
-            foreach (var file in filesToDelete)
-            {
-                File.Delete(file);
+                foreach (var file in filesToDelete)
+                {
+                    File.Delete(file);
+                }
             }
         }
 
@@ -277,7 +287,7 @@ namespace JoinerSplitter
 
         private class ProcessResult : IDisposable
         {
-            private bool disposedValue = false; // To detect redundant calls
+            private bool disposedValue; // To detect redundant calls
 
             public ProcessResult(Process proc, ProcessTaskParams parameters)
             {

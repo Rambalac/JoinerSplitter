@@ -1,25 +1,25 @@
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using static System.FormattableString;
-
 namespace JoinerSplitter
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Globalization;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.Serialization;
+    using System.Runtime.Serialization.Json;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Data;
+    using System.Windows.Documents;
+    using System.Windows.Input;
+    using System.Windows.Media;
+    using System.Windows.Media.Animation;
+    using Microsoft.Win32;
+    using static System.FormattableString;
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -28,7 +28,7 @@ namespace JoinerSplitter
         private static readonly string[] AllowedExtensions = { "mov", "mp4", "avi", "wmv", "mkv", "mts", "m2ts" };
         private static readonly string DialogFilterString = Invariant($"Video files|{string.Join(";", AllowedExtensions.Select(s => "*." + s))}|All files|*.*");
         private static readonly char[] ProhibitedFilenameChars = { '\\', '/', ':', '*', '?', '\"', '<', '>', '|' };
-        private bool changingSlider = false;
+        private bool changingSlider;
         private Point? dragStartPoint;
         private ListViewInsertMarkAdorner insertAdorner;
         private Storyboard storyboard;
