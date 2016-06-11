@@ -29,11 +29,10 @@ namespace JoinerSplitter
         {
         }
 
-        public VideoFile(string path, double duration, ICollection<double> keyFrames)
+        public VideoFile(string path, double duration)
         {
             filePath = path;
             this.duration = end = duration;
-            this.keyFrames = keyFrames;
         }
 
         public VideoFile(VideoFile video)

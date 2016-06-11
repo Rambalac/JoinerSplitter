@@ -283,15 +283,7 @@ namespace JoinerSplitter
         private async Task<VideoFile> CreateVideoFileObject(string path)
         {
             var duration = await FFMpeg.Instance.GetDuration(path);
-            try
-            {
-                var keyFrames = await FFMpeg.Instance.GetKeyFrames(path);
-                return new VideoFile(path, duration, keyFrames);
-            }
-            catch (InvalidOperationException)
-            {
-                return new VideoFile(path, duration, null);
-            }
+            return new VideoFile(path, duration);
         }
 
         private void NormalizeGroups()
