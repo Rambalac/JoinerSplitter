@@ -1,24 +1,32 @@
+using System.Windows.Shapes;
+
 namespace JoinerSplitter
 {
     using System;
-    using System.Collections.Generic;
     using System.ComponentModel;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Runtime.Serialization;
-    using System.Runtime.Serialization.Json;
-    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Data;
     using System.Windows.Documents;
+    using System.Windows.Forms;
     using System.Windows.Input;
     using System.Windows.Media;
     using System.Windows.Media.Animation;
-    using Microsoft.Win32;
     using static System.FormattableString;
+    using Control = System.Windows.Controls.Control;
+    using DataFormats = System.Windows.DataFormats;
+    using DataObject = System.Windows.DataObject;
+    using DragDropEffects = System.Windows.DragDropEffects;
+    using DragEventArgs = System.Windows.DragEventArgs;
+    using ListViewItem = System.Windows.Controls.ListViewItem;
+    using MessageBox = System.Windows.MessageBox;
+    using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+    using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+    using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -257,21 +265,59 @@ namespace JoinerSplitter
 
         private void FilesList_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (e.OriginalSource is Rectangle || e.OriginalSource is Border)
+            {
+                return;
+            }
+
             dragStartPoint = e.GetPosition(null);
+            if (!(Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) || Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
+            {
+                var result = GetContainerAtPoint<ListViewItem>(filesList, e.GetPosition(filesList));
+                if (result != null && !filesList.SelectedItems.Contains(result.Content))
+                {
+                    filesList.SelectedItem = result.Content;
+                }
+            }
+
             e.Handled = true;
+        }
+
+        private static ItemContainer GetContainerAtPoint<ItemContainer>(ItemsControl control, Point p)
+                            where ItemContainer : DependencyObject
+        {
+            var result = VisualTreeHelper.HitTest(control, p);
+            var obj = result.VisualHit;
+
+            while (VisualTreeHelper.GetParent(obj) != null && !(obj is ItemContainer))
+            {
+                obj = VisualTreeHelper.GetParent(obj);
+            }
+
+            // Will return null if not found
+            return obj as ItemContainer;
         }
 
         private void FilesList_MouseMove(object sender, MouseEventArgs e)
         {
+            if (e.OriginalSource is Rectangle || e.OriginalSource is Border)
+            {
+                return;
+            }
+
             if (e.LeftButton == MouseButtonState.Pressed && dragStartPoint != null)
             {
                 var drag = (Vector)(e.GetPosition(null) - dragStartPoint);
                 if (drag.X > SystemParameters.MinimumHorizontalDragDistance || drag.Y > SystemParameters.MinimumVerticalDragDistance)
                 {
                     var selected = filesList.SelectedItems.Cast<VideoFile>().OrderBy(f => Data.CurrentJob.Files.IndexOf(f)).ToArray();
+                    if (!selected.Any())
+                    {
+                        return;
+                    }
+
                     DragDrop.DoDragDrop(filesList, selected, DragDropEffects.Move);
                     dragStartPoint = null;
-                    selected = null;
                 }
             }
         }
@@ -464,7 +510,7 @@ namespace JoinerSplitter
 
         private void OutputFolderBox_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            using (var dlg = new System.Windows.Forms.FolderBrowserDialog())
+            using (var dlg = new FolderBrowserDialog())
             {
                 if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK)
                 {
@@ -492,18 +538,21 @@ namespace JoinerSplitter
 
         private async void ProcessButton_Click(object sender, RoutedEventArgs e)
         {
+            storyboard.Pause(mainGrid);
             var job = Data.CurrentJob;
             var progress = ProgressWindow.Show(this, job.Files.Sum(f => f.CutDuration));
-
             try
             {
-                await FFMpeg.Instance.DoJob(job, (cur) =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        progress.progress.Value = cur;
-                    });
-                });
+                await FFMpeg.Instance.DoJob(
+                    job,
+                    cur =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                progress.progress.Value = cur;
+                            });
+                        },
+                    progress.CancellationToken);
             }
             catch (Exception ex)
             {

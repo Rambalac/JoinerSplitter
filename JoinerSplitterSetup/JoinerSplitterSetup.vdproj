@@ -130,6 +130,12 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_3F973A4261CEE27D989F963D68B8B249"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_CBF56AE87387499B8AEBD4F2CA6E6073"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -185,12 +191,6 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_23A5709520BAF92C5ABE58AAFD9B79F5"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_3F973A4261CEE27D989F963D68B8B249"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -654,15 +654,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:JoinerSplitter"
-        "ProductCode" = "8:{C725F2FD-72D8-4D60-A387-B6C25CCF1505}"
-        "PackageCode" = "8:{62F20E49-D9DE-458B-AD2E-E4B81B91B6D1}"
+        "ProductCode" = "8:{4814B80F-3B0D-4EAB-91BE-AE13E95583C4}"
+        "PackageCode" = "8:{81D8757A-1F59-4BAE-92C1-4F0B35AA36A4}"
         "UpgradeCode" = "8:{22295F9C-F8CC-4D23-B355-5CB10AD0E5E5}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.6"
+        "ProductVersion" = "8:1.0.8"
         "Manufacturer" = "8:Rambalac"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://github.com/Rambalac/JoinerSplitter"

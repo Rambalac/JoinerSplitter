@@ -1,6 +1,7 @@
 namespace JoinerSplitter
 {
     using System;
+    using System.Threading;
     using System.Windows;
 
     /// <summary>
@@ -9,11 +10,14 @@ namespace JoinerSplitter
     public partial class ProgressWindow : Window
     {
         private bool wasEnabled;
+        private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         private ProgressWindow()
         {
             InitializeComponent();
         }
+
+        public CancellationToken CancellationToken => cancellationTokenSource.Token;
 
         public static ProgressWindow Show(Window owner, double total = 100)
         {
@@ -37,6 +41,11 @@ namespace JoinerSplitter
             }
 
             base.OnClosed(e);
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            cancellationTokenSource.Cancel();
         }
     }
 }

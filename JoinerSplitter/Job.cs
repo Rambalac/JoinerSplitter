@@ -1,7 +1,9 @@
 namespace JoinerSplitter
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Collections.Specialized;
     using System.ComponentModel;
     using System.IO;
     using System.Linq;
@@ -39,7 +41,7 @@ namespace JoinerSplitter
                 var folder = OutputFolder ?? Path.GetDirectoryName(Files.First().FilePath);
                 if (Files.Select(f => f.GroupIndex).Distinct().Count() == 1)
                 {
-                    return new FilesGroup[] { new FilesGroup(Path.Combine(folder, OutputName), Files) };
+                    return new[] { new FilesGroup(Path.Combine(folder, OutputName), Files) };
                 }
 
                 var noext = Path.GetFileNameWithoutExtension(OutputName);
@@ -82,7 +84,7 @@ namespace JoinerSplitter
             }
         }
 
-        private void Files_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void Files_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             OnPropertyChanged(nameof(HasMoreGroupsThanOne));
         }

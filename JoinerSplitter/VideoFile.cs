@@ -20,7 +20,7 @@ namespace JoinerSplitter
         [DataMember]
         private int groupIndex;
 
-        private ICollection<double> keyFrames;
+        private readonly ICollection<double> keyFrames;
 
         [DataMember]
         private double start;
@@ -129,7 +129,6 @@ namespace JoinerSplitter
             }
 
             duration = FFMpeg.Instance.GetDuration(filePath).Result;
-            keyFrames = FFMpeg.Instance.GetKeyFrames(filePath).Result;
         }
     }
 }

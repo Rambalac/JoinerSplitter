@@ -3,6 +3,7 @@ namespace JoinerSplitter
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -15,6 +16,7 @@ namespace JoinerSplitter
     {
         // frame=   81 fps=0.0 q=-1.0 Lsize=   20952kB time = 00:00:03.09 bitrate=55455.1kbits/s
         private static readonly Regex TimeExtract = new Regex(@"\s*frame\s*=\s*(?<frame>\d*)\s*fps\s*=\s*(?<fps>[\d.]*)\s*q\s*=[\d-+.]*\s*(L)?size\s*=\s*(\d*\w{1,5})?\s*time\s*=\s*(?<time>\d{2}:\d{2}:\d{2}\.\d{2}).*");
+        private static SemaphoreSlim tasksLimit;
 
         private FFMpeg()
         {
@@ -26,13 +28,10 @@ namespace JoinerSplitter
 
         public string FFProbePath { get; set; } = "ffprobe.exe";
 
-        public async Task DoJob(Job job)
+        public async Task DoJob(Job job, Action<double> progressUpdate, CancellationToken cancellation)
         {
-            await DoJob(job, null);
-        }
+            tasksLimit = new SemaphoreSlim(2);
 
-        public async Task DoJob(Job job, Action<double> progressUpdate)
-        {
             var groups = job.FileGroups.ToList();
             var error = groups.Join(job.Files, g => g.FilePath, f => f.FilePath, (g, f) => g.FilePath);
             if (error.Any())
@@ -51,13 +50,13 @@ namespace JoinerSplitter
                 {
                     var subprogress = new ParallelProgressContainer();
                     progress.Add(subprogress);
-                    task = ConcatMultipleFiles(step, subprogress);
+                    task = ConcatMultipleFiles(step, subprogress, cancellation);
                 }
                 else
                 {
                     var subprogress = new ParallelProgressChild();
                     progress.Add(subprogress);
-                    task = CutOneFile(step.Files.Single(), step.FilePath, subprogress);
+                    task = CutOneFile(step.Files.Single(), step.FilePath, subprogress, cancellation);
                 }
 
                 tasks.Add(task);
@@ -105,23 +104,23 @@ namespace JoinerSplitter
 
         private static Task<ProcessResult> StartProcess(string command, params string[] arguments)
         {
-            return StartProcess(command, ProcessPriorityClass.Normal, new ProcessTaskParams(), null, arguments);
+            return StartProcessFull(command, ProcessPriorityClass.Normal, new ProcessTaskParams(), null, null, arguments);
         }
 
-        private static Task<ProcessResult> StartProcess(string command, Action<string> progress, params string[] arguments)
+        private static Task<ProcessResult> StartProcess(string command, Action<string> progress, CancellationToken? cancellation, params string[] arguments)
         {
-            return StartProcess(command, ProcessPriorityClass.Normal, new ProcessTaskParams(), progress, arguments);
+            return StartProcessFull(command, ProcessPriorityClass.Normal, new ProcessTaskParams(), progress, cancellation, arguments);
         }
 
         private static Task<ProcessResult> StartProcess(string command, int resultLimit, params string[] arguments)
         {
             var pars = new ProcessTaskParams { ResultLinesLimit = resultLimit };
 
-            return StartProcess(command, ProcessPriorityClass.Normal, pars, null, arguments);
+            return StartProcessFull(command, ProcessPriorityClass.Normal, pars, null, null, arguments);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by caller")]
-        private static Task<ProcessResult> StartProcess(string command, ProcessPriorityClass priorityClass, ProcessTaskParams parameters, Action<string> progress, params string[] arguments)
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by caller")]
+        private static Task<ProcessResult> StartProcessFull(string command, ProcessPriorityClass priorityClass, ProcessTaskParams parameters, Action<string> progress, CancellationToken? cancellation, params string[] arguments)
         {
             var proc = new Process
             {
@@ -182,6 +181,14 @@ namespace JoinerSplitter
             proc.PriorityClass = priorityClass;
             proc.BeginErrorReadLine();
             proc.BeginOutputReadLine();
+
+            cancellation?.Register(() =>
+            {
+                proc.Kill();
+                proc.Dispose();
+                exited.TrySetCanceled();
+            });
+
             return exited.Task;
         }
 
@@ -195,7 +202,7 @@ namespace JoinerSplitter
             }
         }
 
-        private async Task ConcatMultipleFiles(FilesGroup step, ParallelProgressContainer progress)
+        private async Task ConcatMultipleFiles(FilesGroup step, ParallelProgressContainer progress, CancellationToken cancellation)
         {
             var concatFiles = new List<string>();
             var tasks = new List<Task>();
@@ -205,6 +212,7 @@ namespace JoinerSplitter
             {
                 foreach (var file in step.Files)
                 {
+                    cancellation.ThrowIfCancellationRequested();
                     if (Math.Abs(file.CutDuration - file.Duration) < 0.001)
                     {
                         concatFiles.Add(file.FilePath);
@@ -219,13 +227,16 @@ namespace JoinerSplitter
                         var cutprogress = new ParallelProgressChild();
                         progress.Add(cutprogress);
 
-                        var tempproc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, cutprogress, 0.5), tempargs);
+                        await tasksLimit.WaitAsync(cancellation);
+                        var tempproc = StartProcess(FFMpegPath, str => UpdateProgress(str, cutprogress, 0.5), cancellation, tempargs);
+
                         var fileCutDuration = file.CutDuration;
 
-                        var task = tempproc.ContinueWith((t) =>
+                        var task = tempproc.ContinueWith(t =>
                          {
                              t.Result.Dispose();
-                         });
+                             tasksLimit.Release();
+                         }, cancellation);
                         filesToDelete.Add(newfile);
                         concatFiles.Add(newfile);
                         tasks.Add(task);
@@ -240,9 +251,18 @@ namespace JoinerSplitter
                     var subprogress = new ParallelProgressChild();
                     progress.Add(subprogress);
 
-                    using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, subprogress, 0.5), $"-f concat -safe 0 -i \"{concatFile}\" -c copy -y \"{step.FilePath}\""))
+                    try
                     {
-                        await proc;
+                        await tasksLimit.WaitAsync(cancellation);
+
+                        using (var proc = StartProcess(FFMpegPath, str => UpdateProgress(str, subprogress, 0.5), cancellation, $"-f concat -safe 0 -i \"{concatFile}\" -c copy -y \"{step.FilePath}\""))
+                        {
+                            await proc;
+                        }
+                    }
+                    finally
+                    {
+                        tasksLimit.Release();
                     }
                 }
                 finally
@@ -274,14 +294,22 @@ namespace JoinerSplitter
             return result;
         }
 
-        private async Task CutOneFile(VideoFile file, string filePath, ParallelProgressChild progress)
+        private async Task CutOneFile(VideoFile file, string filePath, ParallelProgressChild progress, CancellationToken cancellation)
         {
             var args = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{filePath}\"");
             Debug.WriteLine(args);
 
-            using (var proc = StartProcess(FFMpegPath, (str) => UpdateProgress(str, progress), args))
+            await tasksLimit.WaitAsync(cancellation);
+            try
             {
-                await proc;
+                using (var proc = StartProcess(FFMpegPath, str => UpdateProgress(str, progress), cancellation, args))
+                {
+                    await proc;
+                }
+            }
+            finally
+            {
+                tasksLimit.Release();
             }
         }
 
@@ -297,9 +325,9 @@ namespace JoinerSplitter
 
             public LinkedList<string> ErrorLines { get; } = new LinkedList<string>();
 
-            public ProcessTaskParams Parameters { get; set; }
+            public ProcessTaskParams Parameters { get; }
 
-            public Process Process { get; set; }
+            public Process Process { get; }
 
             public LinkedList<string> ResultLines { get; } = new LinkedList<string>();
 
