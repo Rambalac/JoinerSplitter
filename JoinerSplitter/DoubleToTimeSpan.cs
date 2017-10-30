@@ -8,13 +8,13 @@ namespace JoinerSplitter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var val = (double)value;
+            var val = (double)(value ?? throw new ArgumentNullException(nameof(value)));
             return TimeSpan.FromSeconds(val);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var val = (TimeSpan)value;
+            var val = (TimeSpan)(value ?? throw new ArgumentNullException(nameof(value)));
             return val.TotalSeconds;
         }
     }

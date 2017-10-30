@@ -6,7 +6,7 @@ namespace JoinerSplitter
     /// <summary>
     /// Interaction logic for InfoBox.xaml
     /// </summary>
-    public partial class InfoBox : Window
+    public partial class InfoBox
     {
         private bool wasEnabled;
 
@@ -17,9 +17,11 @@ namespace JoinerSplitter
 
         public static InfoBox Show(Window owner, string text)
         {
-            var dlg = new InfoBox();
-            dlg.textBlock.Text = text;
-            dlg.Owner = owner;
+            var dlg = new InfoBox
+            {
+                TextBlock = { Text = text },
+                Owner = owner
+            };
             if (owner != null)
             {
                 dlg.wasEnabled = owner.IsEnabled;

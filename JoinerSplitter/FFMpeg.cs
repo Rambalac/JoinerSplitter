@@ -16,6 +16,7 @@ namespace JoinerSplitter
     {
         // frame=   81 fps=0.0 q=-1.0 Lsize=   20952kB time = 00:00:03.09 bitrate=55455.1kbits/s
         private static readonly Regex TimeExtract = new Regex(@"\s*frame\s*=\s*(?<frame>\d*)\s*fps\s*=\s*(?<fps>[\d.]*)\s*q\s*=[\d-+.]*\s*(L)?size\s*=\s*(\d*\w{1,5})?\s*time\s*=\s*(?<time>\d{2}:\d{2}:\d{2}\.\d{2}).*");
+
         private static SemaphoreSlim tasksLimit;
 
         private FFMpeg()
@@ -33,7 +34,7 @@ namespace JoinerSplitter
             tasksLimit = new SemaphoreSlim(2);
 
             var groups = job.FileGroups.ToList();
-            var error = groups.Join(job.Files, g => g.FilePath, f => f.FilePath, (g, f) => g.FilePath);
+            var error = groups.Join(job.Files, g => g.FilePath, f => f.FilePath, (g, f) => g.FilePath).ToList();
             if (error.Any())
             {
                 throw new ArgumentException("Some output file names are the same as one of inputs:\r\n" + string.Join("\r\n", error.Select(s => "  " + s)));
@@ -46,7 +47,7 @@ namespace JoinerSplitter
             {
                 var stepDuration = step.Files.Sum(f => f.CutDuration);
                 Task task;
-                if (step.Files.Count() > 1)
+                if (step.Files.Count > 1)
                 {
                     var subprogress = new ParallelProgressContainer();
                     progress.Add(subprogress);
@@ -56,7 +57,7 @@ namespace JoinerSplitter
                 {
                     var subprogress = new ParallelProgressChild();
                     progress.Add(subprogress);
-                    task = CutOneFile(step.Files.Single(), step.FilePath, subprogress, cancellation);
+                    task = CutOneFile(step, subprogress, cancellation);
                 }
 
                 tasks.Add(task);
@@ -204,6 +205,7 @@ namespace JoinerSplitter
 
         private async Task ConcatMultipleFiles(FilesGroup step, ParallelProgressContainer progress, CancellationToken cancellation)
         {
+            var outputFormat = step.OutputEncoding ?? "-c copy";
             var concatFiles = new List<string>();
             var tasks = new List<Task>();
             var filesToDelete = new List<string>();
@@ -219,9 +221,9 @@ namespace JoinerSplitter
                     }
                     else
                     {
-                        var newfile = Path.GetTempFileName() + Path.GetExtension(file.FilePath);
+                        var newfile = Path.GetTempFileName() + Path.GetExtension(step.FilePath);
 
-                        var tempargs = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{newfile}\"");
+                        var tempargs = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} {outputFormat} -y \"{newfile}\"");
                         Debug.WriteLine(tempargs);
 
                         var cutprogress = new ParallelProgressChild();
@@ -232,11 +234,12 @@ namespace JoinerSplitter
 
                         var fileCutDuration = file.CutDuration;
 
-                        var task = tempproc.ContinueWith(t =>
-                         {
-                             t.Result.Dispose();
-                             tasksLimit.Release();
-                         }, cancellation);
+                        var task = tempproc.ContinueWith(
+                            t =>
+                             {
+                                 t.Result.Dispose();
+                                 tasksLimit.Release();
+                             }, cancellation);
                         filesToDelete.Add(newfile);
                         concatFiles.Add(newfile);
                         tasks.Add(task);
@@ -294,9 +297,13 @@ namespace JoinerSplitter
             return result;
         }
 
-        private async Task CutOneFile(VideoFile file, string filePath, ParallelProgressChild progress, CancellationToken cancellation)
+        private async Task CutOneFile(FilesGroup step, ParallelProgressChild progress, CancellationToken cancellation)
         {
-            var args = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{filePath}\"");
+            var outputFormat = step.OutputEncoding ?? "-c copy";
+            var file = step.Files.Single();
+            var filePath = step.FilePath;
+
+            var args = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} {outputFormat} -y \"{filePath}\"");
             Debug.WriteLine(args);
 
             await tasksLimit.WaitAsync(cancellation);
@@ -327,9 +334,16 @@ namespace JoinerSplitter
 
             public ProcessTaskParams Parameters { get; }
 
-            public Process Process { get; }
-
             public LinkedList<string> ResultLines { get; } = new LinkedList<string>();
+
+            private Process Process { get; }
+
+            // This code added to correctly implement the disposable pattern.
+            public void Dispose()
+            {
+                // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+                Dispose(true);
+            }
 
             public string GetLine()
             {
@@ -339,13 +353,6 @@ namespace JoinerSplitter
             public IEnumerable<string> GetLines()
             {
                 return ResultLines.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim());
-            }
-
-            // This code added to correctly implement the disposable pattern.
-            public void Dispose()
-            {
-                // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-                Dispose(true);
             }
 
             protected virtual void Dispose(bool disposing)

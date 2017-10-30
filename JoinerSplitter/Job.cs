@@ -16,6 +16,8 @@ namespace JoinerSplitter
         [DataMember]
         private readonly ObservableCollection<VideoFile> files = new ObservableCollection<VideoFile>();
 
+        private EncodingPreset encoding;
+
         [DataMember]
         private string outputFolder;
 
@@ -29,6 +31,17 @@ namespace JoinerSplitter
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        [DataMember]
+        public EncodingPreset Encoding
+        {
+            get => encoding;
+            set
+            {
+                encoding = value;
+                OnPropertyChanged(nameof(encoding));
+            }
+        }
+
         public ICollection<FilesGroup> FileGroups
         {
             get
@@ -38,15 +51,15 @@ namespace JoinerSplitter
                     return new FilesGroup[] { };
                 }
 
-                var folder = OutputFolder ?? Path.GetDirectoryName(Files.First().FilePath);
+                var folder = OutputFolder ?? Path.GetDirectoryName(Files.First().FilePath) ?? throw new NullReferenceException();
                 if (Files.Select(f => f.GroupIndex).Distinct().Count() == 1)
                 {
-                    return new[] { new FilesGroup(Path.Combine(folder, OutputName), Files) };
+                    return new[] { new FilesGroup(Path.Combine(folder, OutputName), Files, Encoding?.Value) };
                 }
 
                 var noext = Path.GetFileNameWithoutExtension(OutputName);
                 var ext = Path.GetExtension(OutputName);
-                return Files.GroupBy(f => f.GroupIndex, (k, f) => new FilesGroup(Path.Combine(folder, Invariant($"{noext}_{k}{ext}")), f.ToList())).ToList();
+                return Files.GroupBy(f => f.GroupIndex, (k, f) => new FilesGroup(Path.Combine(folder, Invariant($"{noext}_{k}{ext}")), f.ToList(), Encoding?.Value)).ToList();
             }
         }
 
@@ -56,12 +69,11 @@ namespace JoinerSplitter
 
         public string JobFilePath { get; set; } = string.Empty;
 
+        public EncodingPreset OriginalEncoding { get; set; }
+
         public string OutputFolder
         {
-            get
-            {
-                return outputFolder;
-            }
+            get => outputFolder;
 
             set
             {
@@ -72,10 +84,7 @@ namespace JoinerSplitter
 
         public string OutputName
         {
-            get
-            {
-                return outputName;
-            }
+            get => outputName;
 
             set
             {
@@ -83,6 +92,8 @@ namespace JoinerSplitter
                 OnPropertyChanged(nameof(OutputName));
             }
         }
+
+        public bool Changed { get; set; }
 
         private void Files_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -92,6 +103,7 @@ namespace JoinerSplitter
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            Changed = true;
         }
     }
 }

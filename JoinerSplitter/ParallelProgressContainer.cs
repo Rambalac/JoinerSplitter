@@ -17,7 +17,7 @@
                     return total;
                 }
 
-                double sum = children.Sum(p => p.Current);
+                var sum = children.Sum(p => p.Current);
                 if (children.All(c => Done))
                 {
                     total = sum;

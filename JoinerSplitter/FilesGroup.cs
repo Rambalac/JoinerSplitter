@@ -4,14 +4,17 @@ namespace JoinerSplitter
 
     public class FilesGroup
     {
-        public FilesGroup(string filePath, ICollection<VideoFile> files)
+        public FilesGroup(string filePath, ICollection<VideoFile> files, string outputEncoding)
         {
             FilePath = filePath;
             Files = files;
+            OutputEncoding = outputEncoding;
         }
 
-        public string FilePath { get; private set; }
+        public string FilePath { get; }
 
-        public ICollection<VideoFile> Files { get; private set; }
+        public ICollection<VideoFile> Files { get; }
+
+        public string OutputEncoding { get; }
     }
 }

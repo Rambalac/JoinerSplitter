@@ -58,10 +58,7 @@ namespace JoinerSplitter
 
         public double End
         {
-            get
-            {
-                return end;
-            }
+            get => end;
 
             set
             {
@@ -78,10 +75,7 @@ namespace JoinerSplitter
 
         public int GroupIndex
         {
-            get
-            {
-                return groupIndex;
-            }
+            get => groupIndex;
 
             set
             {
@@ -94,10 +88,7 @@ namespace JoinerSplitter
 
         public double Start
         {
-            get
-            {
-                return start;
-            }
+            get => start;
 
             set
             {

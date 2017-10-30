@@ -12,13 +12,15 @@ namespace JoinerSplitter
         public ListViewInsertMarkAdorner(Control adornedElement)
             : base(adornedElement)
         {
-            View = new ListViewInsertMarkAdornerView();
+            View = new ListViewInsertMarkAdornerView
+            {
+                Width = adornedElement.RenderSize.Width,
+                IsHitTestVisible = false
+            };
 
             // view = new Rectangle { Fill = new SolidColorBrush(Colors.Black) };
-            View.Width = adornedElement.RenderSize.Width;
 
             // view.Height = adornedElement.RenderSize.Height;
-            View.IsHitTestVisible = false;
         }
 
 #pragma warning disable RECS0018 // Comparison of floating point numbers with equality operator

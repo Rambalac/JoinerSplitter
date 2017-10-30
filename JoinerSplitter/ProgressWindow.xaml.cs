@@ -21,14 +21,13 @@ namespace JoinerSplitter
 
         public static ProgressWindow Show(Window owner, double total = 100)
         {
-            var dlg = new ProgressWindow();
-            dlg.Owner = owner;
+            var dlg = new ProgressWindow { Owner = owner };
             if (owner != null)
             {
                 dlg.wasEnabled = owner.IsEnabled;
             }
 
-            dlg.progress.Maximum = total;
+            dlg.Progress.Maximum = total;
             dlg.Show();
             return dlg;
         }

@@ -3,14 +3,19 @@ namespace JoinerSplitter
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.IO;
     using System.Linq;
     using System.Runtime.Serialization.Json;
     using System.Threading.Tasks;
+    using Properties;
 
     public class AppModel : INotifyPropertyChanged
     {
+        private static readonly IList<EncodingPreset> DefaultEncoderPresets = Settings.Default.DefaultEncodingPresets
+            .Cast<string>().SelectGroups(2).Select(i => new EncodingPreset { Name = i[0], Value = i[1] }).ToList();
+
         private VideoFile currentFile;
 
         private Job currentJob;
@@ -22,12 +27,13 @@ namespace JoinerSplitter
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public IEnumerable<EncodingPreset> ComboBoxEncoderPresets => (CurrentJob.OriginalEncoding != null)
+            ? new[] { CurrentJob.OriginalEncoding }.Concat(EncoderPresets)
+            : EncoderPresets;
+
         public VideoFile CurrentFile
         {
-            get
-            {
-                return currentFile;
-            }
+            get => currentFile;
 
             set
             {
@@ -41,10 +47,7 @@ namespace JoinerSplitter
 
         public Job CurrentJob
         {
-            get
-            {
-                return currentJob;
-            }
+            get => currentJob;
 
             set
             {
@@ -53,7 +56,22 @@ namespace JoinerSplitter
             }
         }
 
+        public ObservableCollection<EncodingPreset> EncoderPresets { get; set; } = new ObservableCollection<EncodingPreset>((IEnumerable<EncodingPreset>)Settings.Default?.EncodingPresets ?? DefaultEncoderPresets);
+
         public bool HasCurrentFile => CurrentFile != null;
+
+        public string OutputFolder => SelectedOutputFolder ?? CurrentJob.OutputFolder;
+
+        public string SelectedOutputFolder
+        {
+            get => Settings.Default?.OutputFolder;
+            set
+            {
+                Settings.Default.OutputFolder = value;
+                SaveSettings();
+                OnPropertyChanged(nameof(OutputFolder));
+            }
+        }
 
         public async Task AddFiles(string[] files)
         {
@@ -128,7 +146,7 @@ namespace JoinerSplitter
             var jobFiles = CurrentJob.Files;
             if (before != null)
             {
-                int ind = jobFiles.IndexOf(before);
+                var ind = jobFiles.IndexOf(before);
                 while (before != null && files.Contains(before))
                 {
                     ind++;
@@ -141,7 +159,7 @@ namespace JoinerSplitter
                 jobFiles.Remove(file);
             }
 
-            int insertIndex = (before != null) ? jobFiles.IndexOf(before) : jobFiles.Count;
+            var insertIndex = (before != null) ? jobFiles.IndexOf(before) : jobFiles.Count;
             var lastFile = jobFiles.LastOrDefault();
             if (groupIndex < 0)
             {
@@ -161,9 +179,8 @@ namespace JoinerSplitter
         {
             var jobFiles = CurrentJob.Files;
             var selected = selectedItems.Cast<VideoFile>().OrderBy(f => jobFiles.IndexOf(f)).ToList();
-            for (var i = 0; i < selected.Count; i++)
+            foreach (var file in selected)
             {
-                var file = selected[i];
                 var fileindex = jobFiles.IndexOf(file);
                 if (fileindex > 0 && !selected.Contains(jobFiles[fileindex - 1]))
                 {
@@ -187,13 +204,33 @@ namespace JoinerSplitter
             {
                 using (var stream = File.OpenRead(path))
                 {
-                    Environment.CurrentDirectory = Path.GetDirectoryName(path);
+                    Environment.CurrentDirectory = Path.GetDirectoryName(path) ?? Environment.CurrentDirectory;
                     var ser = new DataContractJsonSerializer(typeof(Job));
                     var result = (Job)ser.ReadObject(stream);
                     result.JobFilePath = path;
+                    if (result.Encoding != null)
+                    {
+                        result.OriginalEncoding = new EncodingPreset
+                        {
+                            Name = result.Encoding.Name,
+                            Value = result.Encoding.Value,
+                            DisplayName = result.Encoding.Name.Trim() + " (original)"
+                        };
+                        result.Encoding = result.OriginalEncoding;
+                        result.Changed = false;
+                    }
+
                     return result;
                 }
             });
+            OnPropertyChanged(nameof(ComboBoxEncoderPresets));
+        }
+
+        public void SaveEncoders()
+        {
+            Settings.Default.EncodingPresets = new EncodingPresetsCollection(EncoderPresets);
+            OnPropertyChanged(nameof(ComboBoxEncoderPresets));
+            SaveSettings();
         }
 
         public async Task SaveJob(string path)
@@ -206,7 +243,13 @@ namespace JoinerSplitter
                     ser.WriteObject(stream, CurrentJob);
                 }
                 CurrentJob.JobFilePath = path;
+                CurrentJob.Changed = false;
             });
+        }
+
+        public void SaveSettings()
+        {
+            Settings.Default.Save();
         }
 
         public void SplitCurrentVideo(double currentTime)
@@ -247,7 +290,7 @@ namespace JoinerSplitter
         internal void DuplicateVideos(IList selectedItems)
         {
             var selected = selectedItems.Cast<VideoFile>().ToList();
-            int insertIndex = selected.Select(v => CurrentJob.Files.IndexOf(v)).Max() + 1;
+            var insertIndex = selected.Select(v => CurrentJob.Files.IndexOf(v)).Max() + 1;
             foreach (var file in selected)
             {
                 CurrentJob.Files.Insert(insertIndex++, new VideoFile(file));

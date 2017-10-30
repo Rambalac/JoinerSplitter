@@ -20,11 +20,11 @@
             base.Done = true;
         }
 
-        public void Update(double current)
+        public void Update(double newCurrent)
         {
             lock (this)
             {
-                this.current = current;
+                current = newCurrent;
             }
 
             Root.Update();
