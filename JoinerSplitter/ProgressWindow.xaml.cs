@@ -9,8 +9,8 @@ namespace JoinerSplitter
     /// </summary>
     public partial class ProgressWindow : Window
     {
-        private bool wasEnabled;
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        private bool wasEnabled;
 
         private ProgressWindow()
         {

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="JoinerSplitter.ListViewInsertMarkAdornerView"
+﻿<UserControl x:Uid="UserControl_1" x:Class="JoinerSplitter.ListViewInsertMarkAdornerView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,9 +6,9 @@
              xmlns:local="clr-namespace:JoinerSplitter"
              mc:Ignorable="d"
              d:DesignHeight="10" d:DesignWidth="105">
-    <Grid Height="9" Margin="5,0,5,0" SnapsToDevicePixels="True">
-        <Polygon Points="0,1 4,4.5 0,8" VerticalAlignment="Center" Stroke="Black" Fill="Black" Grid.ColumnSpan="2" />
-        <Line X2="1" Stretch="Fill" VerticalAlignment="Center" Stroke="Black" StrokeThickness="1" Grid.ColumnSpan="2" />
-        <Polygon Points="0,1 -4,4.5 0,8" VerticalAlignment="Center" HorizontalAlignment="Right" Stroke="Black" Fill="Black" />
+    <Grid x:Uid="Grid_1" Height="9" Margin="5,0,5,0" SnapsToDevicePixels="True">
+        <Polygon x:Uid="Polygon_1" Points="0,1 4,4.5 0,8" VerticalAlignment="Center" Stroke="Black" Fill="Black" Grid.ColumnSpan="2" />
+        <Line x:Uid="Line_1" X2="1" Stretch="Fill" VerticalAlignment="Center" Stroke="Black" StrokeThickness="1" Grid.ColumnSpan="2" />
+        <Polygon x:Uid="Polygon_2" Points="0,1 -4,4.5 0,8" VerticalAlignment="Center" HorizontalAlignment="Right" Stroke="Black" Fill="Black" />
     </Grid>
 </UserControl>

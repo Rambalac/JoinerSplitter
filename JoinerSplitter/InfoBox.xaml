@@ -1,4 +1,4 @@
-﻿<Window x:Class="JoinerSplitter.InfoBox"
+﻿<Window x:Uid="Window_1" x:Class="JoinerSplitter.InfoBox"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:JoinerSplitter"
         mc:Ignorable="d"
         Title="InfoBox" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" ShowInTaskbar="False" WindowStyle="None">
-    <Border Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1">
-        <TextBlock x:Name="TextBlock" TextWrapping="Wrap" Margin="10" />
+    <Border x:Uid="Border_1" Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1">
+        <TextBlock x:Uid="TextBlock" x:Name="TextBlock" TextWrapping="Wrap" Margin="10" />
     </Border>
 </Window>

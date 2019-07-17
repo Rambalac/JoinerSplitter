@@ -2,9 +2,7 @@ namespace JoinerSplitter.Pages
 {
     using System;
     using System.ComponentModel;
-    using System.IO;
     using System.Linq;
-    using System.Runtime.Serialization;
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Controls;
@@ -14,6 +12,8 @@ namespace JoinerSplitter.Pages
     using System.Windows.Input;
     using System.Windows.Media;
     using System.Windows.Media.Animation;
+    using System.Windows.Shapes;
+    using JetBrains.Annotations;
     using Control = System.Windows.Controls.Control;
     using DataFormats = System.Windows.DataFormats;
     using DataObject = System.Windows.DataObject;
@@ -23,15 +23,17 @@ namespace JoinerSplitter.Pages
     using MessageBox = System.Windows.MessageBox;
     using MouseEventArgs = System.Windows.Input.MouseEventArgs;
     using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+    using Path = System.IO.Path;
     using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    [UsedImplicitly]
     public partial class MainWindow
     {
         private static readonly string[] AllowedExtensions = { "mov", "mp4", "avi", "wmv", "mkv", "mts", "m2ts" };
-        private static readonly string DialogFilterString = FormattableString.Invariant($"Video files|{string.Join(";", AllowedExtensions.Select(s => "*." + s))}|All files|*.*");
+        private static readonly string DialogFilterString = $"Video files|{string.Join(";", AllowedExtensions.Select(s => "*." + s))}|All files|*.*";
         private static readonly char[] ProhibitedFilenameChars = { '\\', '/', ':', '*', '?', '\"', '<', '>', '|' };
         private bool changingSlider;
         private Point? dragStartPoint;
@@ -73,24 +75,24 @@ namespace JoinerSplitter.Pages
         public static double GetListViewHeaderHeight(DependencyObject view)
         {
             return ((Control)VisualTreeHelper.GetChild(
-                VisualTreeHelper.GetChild(
-                    VisualTreeHelper.GetChild(
-                        VisualTreeHelper.GetChild(
-                            VisualTreeHelper.GetChild(view, 0),
-                            0),
-                        0),
-                    0),
-                0)).ActualHeight;
+                           VisualTreeHelper.GetChild(
+                               VisualTreeHelper.GetChild(
+                                   VisualTreeHelper.GetChild(
+                                       VisualTreeHelper.GetChild(view, 0),
+                                       0),
+                                   0),
+                               0),
+                           0)).ActualHeight;
         }
 
         private static TItemContainer GetContainerAtPoint<TItemContainer>(ItemsControl control, Point p)
-                            where TItemContainer : DependencyObject
+            where TItemContainer : DependencyObject
         {
             var result = VisualTreeHelper.HitTest(control, p);
             var obj = result.VisualHit;
             if (obj != null)
             {
-                while (VisualTreeHelper.GetParent(obj) != null && !(obj is TItemContainer))
+                while ((VisualTreeHelper.GetParent(obj) != null) && !(obj is TItemContainer))
                 {
                     obj = VisualTreeHelper.GetParent(obj);
                     if (obj == null)
@@ -106,18 +108,20 @@ namespace JoinerSplitter.Pages
 
         private async Task AddFiles(string[] files, VideoFile before = null, int groupIndex = -1)
         {
-            var infobox = InfoBox.Show(this, "Retrieving video files details...");
+            var infoBox = InfoBox.Show(this, "Retrieving video files details...");
 
             try
             {
                 await Data.AddFiles(files, before, groupIndex);
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "File format error");
             }
-
-            infobox.Close();
+            finally
+            {
+                infoBox.Close();
+            }
         }
 
         private async void Button_AddVideo(object sender, RoutedEventArgs e)
@@ -168,14 +172,7 @@ namespace JoinerSplitter.Pages
 
         private void Button_Play(object sender, RoutedEventArgs e)
         {
-            if (storyboard.GetIsPaused(MainGrid))
-            {
-                storyboard.Resume(MainGrid);
-            }
-            else
-            {
-                storyboard.Pause(MainGrid);
-            }
+            PlayPause();
         }
 
         private void Button_SelEnd(object sender, RoutedEventArgs e)
@@ -283,7 +280,7 @@ namespace JoinerSplitter.Pages
 
         private void FilesList_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.OriginalSource is System.Windows.Shapes.Rectangle || e.OriginalSource is Border)
+            if (e.OriginalSource is Rectangle || e.OriginalSource is Border)
             {
                 return;
             }
@@ -292,7 +289,7 @@ namespace JoinerSplitter.Pages
             if (!(Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) || Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
             {
                 var result = GetContainerAtPoint<ListViewItem>(FilesList, e.GetPosition(FilesList));
-                if (result != null && !FilesList.SelectedItems.Contains(result.Content))
+                if ((result != null) && !FilesList.SelectedItems.Contains(result.Content))
                 {
                     FilesList.SelectedItem = result.Content;
                 }
@@ -303,15 +300,15 @@ namespace JoinerSplitter.Pages
 
         private void FilesList_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.OriginalSource is System.Windows.Shapes.Rectangle || e.OriginalSource is Border)
+            if (e.OriginalSource is Rectangle || e.OriginalSource is Border)
             {
                 return;
             }
 
-            if (e.LeftButton == MouseButtonState.Pressed && dragStartPoint != null)
+            if ((e.LeftButton == MouseButtonState.Pressed) && (dragStartPoint != null))
             {
                 var drag = (Vector)(e.GetPosition(null) - dragStartPoint);
-                if (drag.X > SystemParameters.MinimumHorizontalDragDistance || drag.Y > SystemParameters.MinimumVerticalDragDistance)
+                if ((drag.X > SystemParameters.MinimumHorizontalDragDistance) || (drag.Y > SystemParameters.MinimumVerticalDragDistance))
                 {
                     var selected = FilesList.SelectedItems.Cast<VideoFile>().OrderBy(f => Data.CurrentJob.Files.IndexOf(f)).ToArray();
                     if (!selected.Any())
@@ -332,7 +329,7 @@ namespace JoinerSplitter.Pages
                 if (dragStartPoint != null)
                 {
                     var drag = (Vector)(e.GetPosition(null) - dragStartPoint);
-                    if (drag.X <= SystemParameters.MinimumHorizontalDragDistance && drag.Y <= SystemParameters.MinimumVerticalDragDistance)
+                    if ((drag.X <= SystemParameters.MinimumHorizontalDragDistance) && (drag.Y <= SystemParameters.MinimumVerticalDragDistance))
                     {
                         var selected = GetItem(e.GetPosition(FilesList));
                         if (selected != null)
@@ -443,6 +440,11 @@ namespace JoinerSplitter.Pages
             }
         }
 
+        private void MediaElement_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            PlayPause();
+        }
+
         private void MoveFiles(VideoFile[] files, VideoFile before, int groupIndex)
         {
             Data.MoveFiles(files, before, groupIndex);
@@ -461,7 +463,11 @@ namespace JoinerSplitter.Pages
             {
                 await Data.OpenJob(path);
             }
-            catch (SerializationException ex)
+            catch (AggregateException ex)
+            {
+                MessageBox.Show(this, string.Join("\r\n", ex.InnerExceptions.Select(e => e.Message)), "Can not open Job");
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show(this, ex.Message, "Can not open Job");
             }
@@ -470,11 +476,11 @@ namespace JoinerSplitter.Pages
         private async void OpenJob(object sender, RoutedEventArgs e)
         {
             var dlg = new OpenFileDialog
-            {
-                Filter = "JoinerSplitter job file (*.jsj)|*.jsj",
-                DefaultExt = ".jsj",
-                Multiselect = false
-            };
+                      {
+                          Filter = "JoinerSplitter job file (*.jsj)|*.jsj",
+                          DefaultExt = ".jsj",
+                          Multiselect = false
+                      };
 
             var result = dlg.ShowDialog();
             if (result == false)
@@ -482,9 +488,9 @@ namespace JoinerSplitter.Pages
                 return;
             }
 
-            var infobox = InfoBox.Show(this, "Retrieving video files details...");
+            var infoBox = InfoBox.Show(this, "Retrieving video files details...");
             await OpenJob(dlg.FileName);
-            infobox.Close();
+            infoBox.Close();
         }
 
         private void OpenVideo(VideoFile video)
@@ -558,6 +564,18 @@ namespace JoinerSplitter.Pages
             }
         }
 
+        private void PlayPause()
+        {
+            if (storyboard.GetIsPaused(MainGrid))
+            {
+                storyboard.Resume(MainGrid);
+            }
+            else
+            {
+                storyboard.Pause(MainGrid);
+            }
+        }
+
         private async void ProcessButton_Click(object sender, RoutedEventArgs e)
         {
             storyboard?.Pause(MainGrid);
@@ -572,13 +590,7 @@ namespace JoinerSplitter.Pages
             {
                 await FFMpeg.Instance.DoJob(
                     job,
-                    cur =>
-                        {
-                            Dispatcher.Invoke(() =>
-                            {
-                                progress.Progress.Value = cur;
-                            });
-                        },
+                    cur => { Dispatcher.Invoke(() => { progress.Progress.Value = cur; }); },
                     progress.CancellationToken);
             }
             catch (Exception ex)
@@ -617,11 +629,11 @@ namespace JoinerSplitter.Pages
         private async void SaveJobAs(object sender = null, RoutedEventArgs e = null)
         {
             var dlg = new SaveFileDialog
-            {
-                Filter = "JoinerSplitter job file (*.jsj)|*.jsj",
-                DefaultExt = ".jsj",
-                OverwritePrompt = true
-            };
+                      {
+                          Filter = "JoinerSplitter job file (*.jsj)|*.jsj",
+                          DefaultExt = ".jsj",
+                          OverwritePrompt = true
+                      };
             if (!string.IsNullOrWhiteSpace(Data.CurrentJob.JobFilePath))
             {
                 dlg.FileName = Path.GetFileNameWithoutExtension(Data.CurrentJob.JobFilePath);

@@ -8,7 +8,6 @@ namespace JoinerSplitter
     using System.IO;
     using System.Linq;
     using System.Runtime.Serialization;
-    using static System.FormattableString;
 
     [DataContract]
     public class Job : INotifyPropertyChanged
@@ -59,7 +58,7 @@ namespace JoinerSplitter
 
                 var noext = Path.GetFileNameWithoutExtension(OutputName);
                 var ext = Path.GetExtension(OutputName);
-                return Files.GroupBy(f => f.GroupIndex, (k, f) => new FilesGroup(Path.Combine(folder, Invariant($"{noext}_{k}{ext}")), f.ToList(), Encoding?.Value)).ToList();
+                return Files.GroupBy(f => f.GroupIndex, (k, f) => new FilesGroup(Path.Combine(folder, $"{noext}_{k}{ext}"), f.ToList(), Encoding?.Value)).ToList();
             }
         }
 

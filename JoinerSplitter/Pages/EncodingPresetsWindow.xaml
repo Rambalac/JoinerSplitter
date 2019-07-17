@@ -1,4 +1,4 @@
-﻿<Window x:Class="JoinerSplitter.Pages.EncodingPresetsWindow"
+﻿<Window x:Uid="Window_1" x:Class="JoinerSplitter.Pages.EncodingPresetsWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -10,14 +10,14 @@
     Height="150" Width="800"
     Title="EncodingPresetsWindow" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="CanResizeWithGrip" WindowStyle="ToolWindow">
 
-    <Grid>
+    <Grid x:Uid="Grid_1">
         <Grid.RowDefinitions>
-            <RowDefinition/>
+            <RowDefinition x:Uid="RowDefinition_1"/>
         </Grid.RowDefinitions>
-        <DataGrid ItemsSource="{Binding EncoderPresets, Mode=TwoWay}" AutoGenerateColumns="False" >
+        <DataGrid x:Uid="DataGrid_1" ItemsSource="{Binding EncoderPresets, Mode=TwoWay}" AutoGenerateColumns="False" >
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Name}" ClipboardContentBinding="{x:Null}" MinWidth="100"/>
-                <DataGridTextColumn Binding="{Binding Value}" ClipboardContentBinding="{x:Null}" Width="*"/>
+                <DataGridTextColumn x:Uid="DataGridTextColumn_1" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}" MinWidth="100"/>
+                <DataGridTextColumn x:Uid="DataGridTextColumn_2" Binding="{Binding Value}" ClipboardContentBinding="{x:Null}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
 

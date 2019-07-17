@@ -10,12 +10,12 @@ namespace JoinerSplitter
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
-    using static System.FormattableString;
 
     public class FFMpeg
     {
         // frame=   81 fps=0.0 q=-1.0 Lsize=   20952kB time = 00:00:03.09 bitrate=55455.1kbits/s
-        private static readonly Regex TimeExtract = new Regex(@"\s*frame\s*=\s*(?<frame>\d*)\s*fps\s*=\s*(?<fps>[\d.]*)\s*q\s*=[\d-+.]*\s*(L)?size\s*=\s*(\d*\w{1,5})?\s*time\s*=\s*(?<time>\d{2}:\d{2}:\d{2}\.\d{2}).*");
+        private static readonly Regex TimeExtract =
+            new Regex(@"\s*frame\s*=\s*(?<frame>\d*)\s*fps\s*=\s*(?<fps>[\d.]*)\s*q\s*=[\d-+.]*\s*(L)?size\s*=\s*(\d*\w{1,5})?\s*time\s*=\s*(?<time>\d{2}:\d{2}:\d{2}\.\d{2}).*");
 
         private static SemaphoreSlim tasksLimit;
 
@@ -70,16 +70,16 @@ namespace JoinerSplitter
         {
             using (var result = StartProcess(FFProbePath, "-v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1", $"\"{filePath}\""))
             {
-                var proc = await result;
-
                 try
                 {
+                    var proc = await result;
+
                     var line = proc.GetLines().First();
                     return double.Parse(line, CultureInfo.InvariantCulture);
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException("Wrong ffprobe result: " + string.Join("\r\n", proc.ResultLines), ex);
+                    throw new InvalidOperationException("Wrong ffprobe result: " + ex.Message, ex);
                 }
             }
         }
@@ -121,7 +121,13 @@ namespace JoinerSplitter
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by caller")]
-        private static Task<ProcessResult> StartProcessFull(string command, ProcessPriorityClass priorityClass, ProcessTaskParams parameters, Action<string> progress, CancellationToken? cancellation, params string[] arguments)
+        private static Task<ProcessResult> StartProcessFull(
+            string command,
+            ProcessPriorityClass priorityClass,
+            ProcessTaskParams parameters,
+            Action<string> progress,
+            CancellationToken? cancellation,
+            params string[] arguments)
         {
             var proc = new Process
             {
@@ -151,21 +157,21 @@ namespace JoinerSplitter
                 }
                 else
                 {
-                    exited.TrySetException(new InvalidOperationException(string.Join("\r\n", result.ErrorLines)));
+                    exited.TrySetException(new InvalidOperationException(string.Join("\r\n", result.ErrorLines.Any() ? result.ErrorLines : result.ResultLines)));
                 }
 
                 proc.Dispose();
             };
             proc.ErrorDataReceived += (sender, args) =>
             {
-                result.ErrorLines.AddLast(args.Data);
-                if (result.Parameters.ErrorLinesLimit != -1 && result.ErrorLines.Count > result.Parameters.ErrorLinesLimit)
-                {
-                    result.ErrorLines.RemoveFirst();
-                }
-
                 if (!string.IsNullOrWhiteSpace(args.Data))
                 {
+                    result.ErrorLines.AddLast(args.Data);
+                    if (result.Parameters.ErrorLinesLimit != -1 && result.ErrorLines.Count > result.Parameters.ErrorLinesLimit)
+                    {
+                        result.ErrorLines.RemoveFirst();
+                    }
+
                     progress?.Invoke(args.Data);
                 }
             };
@@ -223,7 +229,7 @@ namespace JoinerSplitter
                     {
                         var newfile = Path.GetTempFileName() + Path.GetExtension(step.FilePath);
 
-                        var tempargs = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} {outputFormat} -y \"{newfile}\"");
+                        var tempargs = $"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{newfile}\"";
                         Debug.WriteLine(tempargs);
 
                         var cutprogress = new ParallelProgressChild();
@@ -236,10 +242,11 @@ namespace JoinerSplitter
 
                         var task = tempproc.ContinueWith(
                             t =>
-                             {
-                                 t.Result.Dispose();
-                                 tasksLimit.Release();
-                             }, cancellation);
+                            {
+                                t.Result.Dispose();
+                                tasksLimit.Release();
+                            },
+                            cancellation);
                         filesToDelete.Add(newfile);
                         concatFiles.Add(newfile);
                         tasks.Add(task);
@@ -258,7 +265,11 @@ namespace JoinerSplitter
                     {
                         await tasksLimit.WaitAsync(cancellation);
 
-                        using (var proc = StartProcess(FFMpegPath, str => UpdateProgress(str, subprogress, 0.5), cancellation, $"-f concat -safe 0 -i \"{concatFile}\" -c copy -y \"{step.FilePath}\""))
+                        using (var proc = StartProcess(
+                            FFMpegPath,
+                            str => UpdateProgress(str, subprogress, 0.5),
+                            cancellation,
+                            $"-f concat -safe 0 -i \"{concatFile}\" {outputFormat} -y \"{step.FilePath}\""))
                         {
                             await proc;
                         }
@@ -303,7 +314,7 @@ namespace JoinerSplitter
             var file = step.Files.Single();
             var filePath = step.FilePath;
 
-            var args = Invariant($"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} {outputFormat} -y \"{filePath}\"");
+            var args = $"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} {outputFormat} -y \"{filePath}\"";
             Debug.WriteLine(args);
 
             await tasksLimit.WaitAsync(cancellation);

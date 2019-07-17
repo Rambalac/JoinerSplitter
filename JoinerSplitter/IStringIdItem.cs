@@ -1,4 +1,4 @@
-﻿namespace Tools
+﻿namespace JoinerSplitter
 {
     public interface IStringIdItem
     {

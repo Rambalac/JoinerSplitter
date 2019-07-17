@@ -56,7 +56,8 @@ namespace JoinerSplitter
             }
         }
 
-        public ObservableCollection<EncodingPreset> EncoderPresets { get; set; } = new ObservableCollection<EncodingPreset>((IEnumerable<EncodingPreset>)Settings.Default?.EncodingPresets ?? DefaultEncoderPresets);
+        public ObservableCollection<EncodingPreset> EncoderPresets { get; set; } =
+            new ObservableCollection<EncodingPreset>(Settings.Default?.EncodingPresets ?? DefaultEncoderPresets);
 
         public bool HasCurrentFile => CurrentFile != null;
 
@@ -242,6 +243,7 @@ namespace JoinerSplitter
                     var ser = new DataContractJsonSerializer(typeof(Job));
                     ser.WriteObject(stream, CurrentJob);
                 }
+
                 CurrentJob.JobFilePath = path;
                 CurrentJob.Changed = false;
             });
@@ -326,6 +328,7 @@ namespace JoinerSplitter
         private async Task<VideoFile> CreateVideoFileObject(string path)
         {
             var duration = await FFMpeg.Instance.GetDuration(path);
+
             return new VideoFile(path, duration);
         }
 

@@ -114,4 +114,112 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="MenuItem_1" xml:space="preserve">
+    <value>_File</value>
+  </data>
+  <data name="MenuItem_2" xml:space="preserve">
+    <value>_New job</value>
+  </data>
+  <data name="MenuItem_3" xml:space="preserve">
+    <value>_Open job</value>
+  </data>
+  <data name="MenuItem_4" xml:space="preserve">
+    <value>_Save job</value>
+  </data>
+  <data name="MenuItem_5" xml:space="preserve">
+    <value>Save job _As...</value>
+  </data>
+  <data name="MenuItem_6" xml:space="preserve">
+    <value>_Add video</value>
+  </data>
+  <data name="MenuItem_7" xml:space="preserve">
+    <value>Du_plicate</value>
+  </data>
+  <data name="MenuItem_8" xml:space="preserve">
+    <value>_Delete</value>
+  </data>
+  <data name="MenuItem_9" xml:space="preserve">
+    <value>E_xport</value>
+  </data>
+  <data name="MenuItem_10" xml:space="preserve">
+    <value>E_xit</value>
+  </data>
+  <data name="MenuItem_11" xml:space="preserve">
+    <value>_Video</value>
+  </data>
+  <data name="MenuItem_12" xml:space="preserve">
+    <value>Encoding _Presets</value>
+  </data>
+  <data name="GridViewColumn_1" xml:space="preserve">
+    <value>Original File</value>
+  </data>
+  <data name="GridViewColumn_2" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="GridViewColumn_3" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="OutputFolderBox" xml:space="preserve">
+    <value>Output folder</value>
+  </data>
+  <data name="OutputFilenameBox" xml:space="preserve">
+    <value>Output file name</value>
+  </data>
+  <data name="Button_1" xml:space="preserve">
+    <value>Prev</value>
+  </data>
+  <data name="Button_2" xml:space="preserve">
+    <value>Seek to the start of selection</value>
+  </data>
+  <data name="Button_3" xml:space="preserve">
+    <value>Selection Start</value>
+  </data>
+  <data name="PlayButton" xml:space="preserve">
+    <value>Play/stop video</value>
+  </data>
+  <data name="SplitButton" xml:space="preserve">
+    <value>Split selected cut to separate videos by current position</value>
+  </data>
+  <data name="Button_4" xml:space="preserve">
+    <value>Selection End</value>
+  </data>
+  <data name="Button_5" xml:space="preserve">
+    <value>Seek to the end of selection</value>
+  </data>
+  <data name="Button_6" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="ProcessButton" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="TextBlock_1" xml:space="preserve">
+    <value>Current: </value>
+  </data>
+  <data name="TextBlock_2" xml:space="preserve">
+    <value>Start: </value>
+  </data>
+  <data name="TextBlock_3" xml:space="preserve">
+    <value>End: </value>
+  </data>
+  <data name="TextBlock_4" xml:space="preserve">
+    <value>Duration: </value>
+  </data>
+  <data name="Button_7" xml:space="preserve">
+    <value>Add video</value>
+  </data>
+  <data name="Button_8" xml:space="preserve">
+    <value>Move files up in group or to previous group</value>
+  </data>
+  <data name="Button_9" xml:space="preserve">
+    <value>Move files down in group or to previous group</value>
+  </data>
+  <data name="Button_10" xml:space="preserve">
+    <value>Split into groups</value>
+  </data>
+  <data name="Button_11" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="Button_12" xml:space="preserve">
+    <value>Delete</value>
+  </data>
 </root>

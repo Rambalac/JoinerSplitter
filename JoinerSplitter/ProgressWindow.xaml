@@ -1,4 +1,4 @@
-﻿<Window x:Class="JoinerSplitter.ProgressWindow"
+﻿<Window x:Uid="Window_1" x:Class="JoinerSplitter.ProgressWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,14 +6,14 @@
         xmlns:local="clr-namespace:JoinerSplitter"
         mc:Ignorable="d"
         Title="Progress" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" ShowInTaskbar="False" WindowStyle="None">
-    <Border Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1">
-        <Grid>
+    <Border x:Uid="Border_1" Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1">
+        <Grid x:Uid="Grid_1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition x:Uid="ColumnDefinition_1" />
+                <ColumnDefinition x:Uid="ColumnDefinition_2" Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ProgressBar Width="300" x:Name="Progress" Margin="10,10,0,10" />
-            <Button x:Name="CancelButton" Content="Cancel" Margin="10" Grid.Column="1" Padding="10,1" Click="CancelButton_Click" />
+            <ProgressBar x:Uid="Progress" Width="300" x:Name="Progress" Margin="10,10,0,10" />
+            <Button x:Uid="CancelButton" x:Name="CancelButton" Content="Cancel" Margin="10" Grid.Column="1" Padding="10,1" Click="CancelButton_Click" />
         </Grid>
     </Border>
 </Window>

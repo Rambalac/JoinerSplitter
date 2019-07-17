@@ -9,6 +9,8 @@ namespace JoinerSplitter
     [DataContract]
     public class VideoFile : INotifyPropertyChanged
     {
+        private readonly ICollection<double> keyFrames;
+
         private double duration;
 
         [DataMember]
@@ -19,8 +21,6 @@ namespace JoinerSplitter
 
         [DataMember]
         private int groupIndex;
-
-        private readonly ICollection<double> keyFrames;
 
         [DataMember]
         private double start;
