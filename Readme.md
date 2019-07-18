@@ -15,7 +15,6 @@ Windows with .NET4.7.2 installed.
 Installation
 ------------
 * Install from `msi`. 
-* Install ffmpeg.exe and ffprobe.exe into JoinerSplitter folder or add to Path.
 
 Current limitations and issues
 ------------------------------
