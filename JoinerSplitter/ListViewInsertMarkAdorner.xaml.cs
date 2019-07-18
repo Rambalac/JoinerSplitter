@@ -1,5 +1,6 @@
 namespace JoinerSplitter
 {
+    using System;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Documents;
@@ -28,7 +29,7 @@ namespace JoinerSplitter
         {
             set
             {
-                if (value != 0 && offset != value)
+                if ((Math.Abs(value) > 0.001) && (Math.Abs(offset - value) > 0.001))
                 {
                     offset = value;
                     (Parent as AdornerLayer)?.Update(AdornedElement);
@@ -38,7 +39,7 @@ namespace JoinerSplitter
 
         public FrameworkElement View { get; set; }
 
-        protected override int VisualChildrenCount => (offset == 0) ? 0 : 1;
+        protected override int VisualChildrenCount => Math.Abs(offset) < 0.001 ? 0 : 1;
 #pragma warning restore RECS0018 // Comparison of floating point numbers with equality operator
 
         public override GeneralTransform GetDesiredTransform(GeneralTransform transform)

@@ -1,11 +1,7 @@
 namespace JoinerSplitter
 {
     using System;
-    using System.Collections.ObjectModel;
-    using System.ComponentModel;
-    using System.Runtime.CompilerServices;
     using System.Runtime.Serialization;
-    using JetBrains.Annotations;
 
     [DataContract]
     [Serializable]

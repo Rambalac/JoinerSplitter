@@ -4,8 +4,8 @@ namespace JoinerSplitter
     {
         internal abstract double Current { get; }
 
-        internal bool Done { get; set; } = false;
+        internal bool Done { get; set; }
 
-        internal ParallelProgressRoot Root { get; set; } = null;
+        internal ParallelProgressRoot Root { get; set; }
     }
 }

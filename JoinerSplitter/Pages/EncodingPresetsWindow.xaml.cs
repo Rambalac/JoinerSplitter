@@ -1,14 +1,11 @@
 ﻿namespace JoinerSplitter.Pages
 {
-    using System.Linq;
     using System.Windows;
-    using System.Windows.Controls;
-    using Properties;
 
     /// <summary>
     /// Interaction logic for EncodingPresetsWindow.xaml
     /// </summary>
-    public partial class EncodingPresetsWindow : Window
+    public partial class EncodingPresetsWindow
     {
         public EncodingPresetsWindow()
         {

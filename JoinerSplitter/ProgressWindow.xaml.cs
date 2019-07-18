@@ -7,7 +7,7 @@ namespace JoinerSplitter
     /// <summary>
     /// Interaction logic for ProgressWindow.xaml
     /// </summary>
-    public partial class ProgressWindow : Window
+    public partial class ProgressWindow
     {
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private bool wasEnabled;

@@ -225,4 +225,13 @@
   <data name="Button_9" xml:space="preserve">
     <value>グループの中の下</value>
   </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>変更がありますから、タスクを保存しましょうか？</value>
+  </data>
+  <data name="UnsavedChangesTitle" xml:space="preserve">
+    <value>保存されていないタスク</value>
+  </data>
+  <data name="ReadingFile" xml:space="preserve">
+    <value>ビデオの詳細を読んでいます…</value>
+  </data>
 </root>

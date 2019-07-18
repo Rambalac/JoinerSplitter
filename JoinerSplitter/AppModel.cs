@@ -120,7 +120,7 @@ namespace JoinerSplitter
                 throw new InvalidOperationException("Some files can not be exported by ffmpeg:\r\n" + string.Join("\r\n", error.Select(s => "  " + s)));
             }
 
-            if (string.IsNullOrEmpty(CurrentJob.OutputName) && files.Length > 0)
+            if (string.IsNullOrEmpty(CurrentJob.OutputName) && (files.Length > 0))
             {
                 CurrentJob.OutputName = Path.GetFileNameWithoutExtension(files[0]) + ".out" + Path.GetExtension(files[0]);
             }
@@ -148,7 +148,7 @@ namespace JoinerSplitter
             if (before != null)
             {
                 var ind = jobFiles.IndexOf(before);
-                while (before != null && files.Contains(before))
+                while ((before != null) && files.Contains(before))
                 {
                     ind++;
                     before = (ind < jobFiles.Count) ? jobFiles[ind] : null;
@@ -183,7 +183,7 @@ namespace JoinerSplitter
             foreach (var file in selected)
             {
                 var fileindex = jobFiles.IndexOf(file);
-                if (fileindex > 0 && !selected.Contains(jobFiles[fileindex - 1]))
+                if ((fileindex > 0) && !selected.Contains(jobFiles[fileindex - 1]))
                 {
                     if (jobFiles[fileindex - 1].GroupIndex < file.GroupIndex)
                     {
@@ -258,7 +258,7 @@ namespace JoinerSplitter
         {
             var currentIndex = CurrentJob.Files.IndexOf(CurrentFile);
             var splitTime = CurrentFile.KeyFrames?.Where(f => f > currentTime).DefaultIfEmpty(CurrentFile.Duration).First() ?? currentTime;
-            if (splitTime <= CurrentFile.Start || splitTime >= CurrentFile.End)
+            if ((splitTime <= CurrentFile.Start) || (splitTime >= CurrentFile.End))
             {
                 return;
             }
@@ -309,7 +309,7 @@ namespace JoinerSplitter
             {
                 var file = selected[i];
                 var fileindex = jobFiles.IndexOf(file);
-                if (fileindex < jobFiles.Count - 1 && !selected.Contains(jobFiles[fileindex + 1]))
+                if ((fileindex < jobFiles.Count - 1) && !selected.Contains(jobFiles[fileindex + 1]))
                 {
                     if (jobFiles[fileindex + 1].GroupIndex > file.GroupIndex)
                     {

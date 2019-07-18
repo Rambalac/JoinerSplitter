@@ -340,6 +340,15 @@ namespace JoinerSplitter.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Retrieving video files details....
+        /// </summary>
+        public static string ReadingFile {
+            get {
+                return ResourceManager.GetString("ReadingFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Split selected cut to separate videos by current position.
         /// </summary>
         public static string SplitButton {
@@ -381,6 +390,24 @@ namespace JoinerSplitter.Properties {
         public static string TextBlock_4 {
             get {
                 return ResourceManager.GetString("TextBlock_4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are unsaved changes. Do you want to save current job?.
+        /// </summary>
+        public static string UnsavedChanges {
+            get {
+                return ResourceManager.GetString("UnsavedChanges", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsaved job.
+        /// </summary>
+        public static string UnsavedChangesTitle {
+            get {
+                return ResourceManager.GetString("UnsavedChangesTitle", resourceCulture);
             }
         }
     }

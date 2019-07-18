@@ -222,4 +222,13 @@
   <data name="Button_12" xml:space="preserve">
     <value>Delete</value>
   </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>There are unsaved changes. Do you want to save current job?</value>
+  </data>
+  <data name="UnsavedChangesTitle" xml:space="preserve">
+    <value>Unsaved job</value>
+  </data>
+  <data name="ReadingFile" xml:space="preserve">
+    <value>Retrieving video files details...</value>
+  </data>
 </root>

@@ -108,7 +108,7 @@ namespace JoinerSplitter.Pages
 
         private async Task AddFiles(string[] files, VideoFile before = null, int groupIndex = -1)
         {
-            var infoBox = InfoBox.Show(this, "Retrieving video files details...");
+            var infoBox = InfoBox.Show(this, Properties.Resources.ReadingFile);
 
             try
             {
@@ -425,7 +425,7 @@ namespace JoinerSplitter.Pages
         {
             if (Data.CurrentJob.Changed)
             {
-                var result = MessageBox.Show("There are unsaved changes. Do you want to save current job?", "Unsaved job", MessageBoxButton.YesNoCancel);
+                var result = MessageBox.Show(Properties.Resources.UnsavedChanges, Properties.Resources.UnsavedChangesTitle, MessageBoxButton.YesNoCancel);
                 switch (result)
                 {
                     case MessageBoxResult.Yes:
@@ -488,7 +488,7 @@ namespace JoinerSplitter.Pages
                 return;
             }
 
-            var infoBox = InfoBox.Show(this, "Retrieving video files details...");
+            var infoBox = InfoBox.Show(this, Properties.Resources.ReadingFile);
             await OpenJob(dlg.FileName);
             infoBox.Close();
         }

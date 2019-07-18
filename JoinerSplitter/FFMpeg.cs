@@ -167,7 +167,7 @@ namespace JoinerSplitter
                 if (!string.IsNullOrWhiteSpace(args.Data))
                 {
                     result.ErrorLines.AddLast(args.Data);
-                    if (result.Parameters.ErrorLinesLimit != -1 && result.ErrorLines.Count > result.Parameters.ErrorLinesLimit)
+                    if ((result.Parameters.ErrorLinesLimit != -1) && (result.ErrorLines.Count > result.Parameters.ErrorLinesLimit))
                     {
                         result.ErrorLines.RemoveFirst();
                     }
@@ -178,7 +178,7 @@ namespace JoinerSplitter
             proc.OutputDataReceived += (sender, args) =>
             {
                 result.ResultLines.AddLast(args.Data);
-                if (result.Parameters.ResultLinesLimit != -1 && result.ResultLines.Count > result.Parameters.ResultLinesLimit)
+                if ((result.Parameters.ResultLinesLimit != -1) && (result.ResultLines.Count > result.Parameters.ResultLinesLimit))
                 {
                     result.ResultLines.RemoveFirst();
                 }
