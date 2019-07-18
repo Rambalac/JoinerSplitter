@@ -18,4 +18,4 @@ Installation
 
 Current limitations and issues
 ------------------------------
-Application was tested only with Lumix GH3 and Lumix GH4 (including 4K) MOV videos.
+Application was tested only with Lumix GH3, Lumix GH4, Lumix GH5 (including 4K) and Mavic 2 PRO MOV videos.
