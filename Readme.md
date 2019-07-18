@@ -10,7 +10,7 @@ Cuts will be done by closest keyframes, or at lease it will try to do the best.
 
 Requirements
 ------------
-Windows with .NET4.6 installed.
+Windows with .NET4.7.2 installed.
 
 Installation
 ------------
