@@ -3,7 +3,7 @@
     using System.Windows;
 
     /// <summary>
-    /// Interaction logic for EncodingPresetsWindow.xaml
+    /// Interaction logic for EncodingPresetsWindow.xaml.
     /// </summary>
     public partial class EncodingPresetsWindow
     {

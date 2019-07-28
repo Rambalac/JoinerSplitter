@@ -4,7 +4,7 @@ namespace JoinerSplitter
     using System.Windows;
 
     /// <summary>
-    /// Interaction logic for InfoBox.xaml
+    /// Interaction logic for InfoBox.xaml.
     /// </summary>
     public partial class InfoBox
     {

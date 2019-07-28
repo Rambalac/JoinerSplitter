@@ -27,7 +27,7 @@ namespace JoinerSplitter.Pages
     using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainWindow.xaml.
     /// </summary>
     [UsedImplicitly]
     public partial class MainWindow

@@ -9,17 +9,13 @@
 //------------------------------------------------------------------------------
 
 namespace JoinerSplitter.Properties {
-    using System.CodeDom.Compiler;
-    using System.Collections.Specialized;
-    using System.Configuration;
-    using System.Diagnostics;
-    using System.Runtime.CompilerServices;
-
-    [CompilerGenerated()]
-    [GeneratedCode("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.1.0.0")]
-    internal sealed partial class Settings : ApplicationSettingsBase {
+    
+    
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.1.0.0")]
+    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
-        private static Settings defaultInstance = ((Settings)(Synchronized(new Settings())));
+        private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
         
         public static Settings Default {
             get {
@@ -27,9 +23,9 @@ namespace JoinerSplitter.Properties {
             }
         }
         
-        [UserScopedSetting()]
-        [DebuggerNonUserCode()]
-        [DefaultSettingValue("")]
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string OutputFolder {
             get {
                 return ((string)(this["OutputFolder"]));
@@ -39,29 +35,37 @@ namespace JoinerSplitter.Properties {
             }
         }
         
-        [UserScopedSetting()]
-        [DebuggerNonUserCode()]
-        public EncodingPresetsCollection EncodingPresets {
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::JoinerSplitter.EncodingPresetsCollection EncodingPresets1 {
             get {
-                return ((EncodingPresetsCollection)(this["EncodingPresets"]));
+                return ((global::JoinerSplitter.EncodingPresetsCollection)(this["EncodingPresets1"]));
             }
             set {
-                this["EncodingPresets"] = value;
+                this["EncodingPresets1"] = value;
             }
         }
         
-        [ApplicationScopedSetting()]
-        [DebuggerNonUserCode()]
-        [DefaultSettingValue(@"<?xml version=""1.0"" encoding=""utf-16""?>
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
 <ArrayOfString xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
   <string>Direct copy</string>
   <string>-c copy</string>
+  <string xsi:nil=""true"" />
   <string>h264 80Mbit/s</string>
   <string>-c:v libx264 -x264-params \""nal-hrd=cbr\"" -b:v 80M -minrate 80M -maxrate 100M -bufsize 500M -c:a copy</string>
+  <string xsi:nil=""true"" />
+  <string>4K h264 80Mbit/s</string>
+  <string>-c:v libx264 -x264-params \""nal-hrd=vbr\"" -b:v 80M -minrate 80M -maxrate 100M -bufsize 500M -c:a pcm_s16le</string>
+  <string>[%i:v]scale=3840:2160:force_original_aspect_ratio=0[v%i]; </string>
+  <string>1080 h264 40Mbit/s</string>
+  <string>-c:v libx264 -x264-params \""nal-hrd=vbr\"" -b:v 40M -minrate 30M -maxrate 50M -bufsize 500M -c:a pcm_s16le</string>
+  <string>[%i:v]scale=1920:1080:force_original_aspect_ratio=0[v%i]; </string>
 </ArrayOfString>")]
-        public StringCollection DefaultEncodingPresets {
+        public global::System.Collections.Specialized.StringCollection DefaultEncodingPresets {
             get {
-                return ((StringCollection)(this["DefaultEncodingPresets"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["DefaultEncodingPresets"]));
             }
         }
     }

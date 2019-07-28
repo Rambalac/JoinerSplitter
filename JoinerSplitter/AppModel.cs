@@ -14,7 +14,8 @@ namespace JoinerSplitter
     public class AppModel : INotifyPropertyChanged
     {
         private static readonly IList<EncodingPreset> DefaultEncoderPresets = Settings.Default.DefaultEncodingPresets
-            .Cast<string>().SelectGroups(2).Select(i => new EncodingPreset { Name = i[0], Value = i[1] }).ToList();
+                                                                                      .Cast<string>().SelectGroups(3).Select(
+                                                                                           i => new EncodingPreset { Name = i[0], OutputEncoding = i[1], ComplexFilter = i[2] }).ToList();
 
         private VideoFile currentFile;
 
@@ -27,9 +28,9 @@ namespace JoinerSplitter
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public IEnumerable<EncodingPreset> ComboBoxEncoderPresets => (CurrentJob.OriginalEncoding != null)
-            ? new[] { CurrentJob.OriginalEncoding }.Concat(EncoderPresets)
-            : EncoderPresets;
+        public IEnumerable<EncodingPreset> ComboBoxEncoderPresets => CurrentJob.OriginalEncoding != null
+                                                                         ? new[] { CurrentJob.OriginalEncoding }.Concat(EncoderPresets)
+                                                                         : EncoderPresets;
 
         public VideoFile CurrentFile
         {
@@ -57,7 +58,7 @@ namespace JoinerSplitter
         }
 
         public ObservableCollection<EncodingPreset> EncoderPresets { get; set; } =
-            new ObservableCollection<EncodingPreset>(Settings.Default?.EncodingPresets ?? DefaultEncoderPresets);
+            new ObservableCollection<EncodingPreset>(Settings.Default?.EncodingPresets1 ?? DefaultEncoderPresets);
 
         public bool HasCurrentFile => CurrentFile != null;
 
@@ -151,7 +152,7 @@ namespace JoinerSplitter
                 while ((before != null) && files.Contains(before))
                 {
                     ind++;
-                    before = (ind < jobFiles.Count) ? jobFiles[ind] : null;
+                    before = ind < jobFiles.Count ? jobFiles[ind] : null;
                 }
             }
 
@@ -160,7 +161,7 @@ namespace JoinerSplitter
                 jobFiles.Remove(file);
             }
 
-            var insertIndex = (before != null) ? jobFiles.IndexOf(before) : jobFiles.Count;
+            var insertIndex = before != null ? jobFiles.IndexOf(before) : jobFiles.Count;
             var lastFile = jobFiles.LastOrDefault();
             if (groupIndex < 0)
             {
@@ -201,52 +202,55 @@ namespace JoinerSplitter
 
         public async Task OpenJob(string path)
         {
-            CurrentJob = await Task.Run(() =>
-            {
-                using (var stream = File.OpenRead(path))
-                {
-                    Environment.CurrentDirectory = Path.GetDirectoryName(path) ?? Environment.CurrentDirectory;
-                    var ser = new DataContractJsonSerializer(typeof(Job));
-                    var result = (Job)ser.ReadObject(stream);
-                    result.JobFilePath = path;
-                    if (result.Encoding != null)
-                    {
-                        result.OriginalEncoding = new EncodingPreset
-                        {
-                            Name = result.Encoding.Name,
-                            Value = result.Encoding.Value,
-                            DisplayName = result.Encoding.Name.Trim() + " (original)"
-                        };
-                        result.Encoding = result.OriginalEncoding;
-                        result.Changed = false;
-                    }
+            CurrentJob = await Task.Run(
+                             () =>
+                             {
+                                 using (var stream = File.OpenRead(path))
+                                 {
+                                     Environment.CurrentDirectory = Path.GetDirectoryName(path) ?? Environment.CurrentDirectory;
+                                     var ser = new DataContractJsonSerializer(typeof(Job));
+                                     var result = (Job)ser.ReadObject(stream);
+                                     result.JobFilePath = path;
+                                     if (result.Encoding != null)
+                                     {
+                                         result.OriginalEncoding = new EncodingPreset
+                                                                   {
+                                                                       Name = result.Encoding.Name,
+                                                                       OutputEncoding = result.Encoding.OutputEncoding,
+                                                                       ComplexFilter = result.Encoding.ComplexFilter,
+                                                                       DisplayName = result.Encoding.Name.Trim() + " (original)"
+                                                                   };
+                                         result.Encoding = result.OriginalEncoding;
+                                         result.Changed = false;
+                                     }
 
-                    return result;
-                }
-            });
+                                     return result;
+                                 }
+                             });
             OnPropertyChanged(nameof(ComboBoxEncoderPresets));
         }
 
         public void SaveEncoders()
         {
-            Settings.Default.EncodingPresets = new EncodingPresetsCollection(EncoderPresets);
+            Settings.Default.EncodingPresets1 = new EncodingPresetsCollection(EncoderPresets);
             OnPropertyChanged(nameof(ComboBoxEncoderPresets));
             SaveSettings();
         }
 
         public async Task SaveJob(string path)
         {
-            await Task.Run(() =>
-            {
-                using (var stream = File.Create(path))
+            await Task.Run(
+                () =>
                 {
-                    var ser = new DataContractJsonSerializer(typeof(Job));
-                    ser.WriteObject(stream, CurrentJob);
-                }
+                    using (var stream = File.Create(path))
+                    {
+                        var ser = new DataContractJsonSerializer(typeof(Job));
+                        ser.WriteObject(stream, CurrentJob);
+                    }
 
-                CurrentJob.JobFilePath = path;
-                CurrentJob.Changed = false;
-            });
+                    CurrentJob.JobFilePath = path;
+                    CurrentJob.Changed = false;
+                });
         }
 
         public void SaveSettings()
@@ -264,10 +268,10 @@ namespace JoinerSplitter
             }
 
             var newFile = new VideoFile(CurrentFile)
-            {
-                Start = splitTime,
-                GroupIndex = CurrentFile.GroupIndex
-            };
+                          {
+                              Start = splitTime,
+                              GroupIndex = CurrentFile.GroupIndex
+                          };
 
             CurrentFile.End = splitTime;
             CurrentJob.Files.Insert(currentIndex + 1, newFile);

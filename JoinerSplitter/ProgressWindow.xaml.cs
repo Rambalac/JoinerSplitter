@@ -5,7 +5,7 @@ namespace JoinerSplitter
     using System.Windows;
 
     /// <summary>
-    /// Interaction logic for ProgressWindow.xaml
+    /// Interaction logic for ProgressWindow.xaml.
     /// </summary>
     public partial class ProgressWindow
     {

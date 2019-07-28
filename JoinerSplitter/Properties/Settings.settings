@@ -5,7 +5,7 @@
     <Setting Name="OutputFolder" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="EncodingPresets" Type="JoinerSplitter.EncodingPresetsCollection" Scope="User">
+    <Setting Name="EncodingPresets1" Type="JoinerSplitter.EncodingPresetsCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="DefaultEncodingPresets" Type="System.Collections.Specialized.StringCollection" Scope="Application">
@@ -13,8 +13,16 @@
 &lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
   &lt;string&gt;Direct copy&lt;/string&gt;
   &lt;string&gt;-c copy&lt;/string&gt;
+  &lt;string xsi:nil="true" /&gt;
   &lt;string&gt;h264 80Mbit/s&lt;/string&gt;
   &lt;string&gt;-c:v libx264 -x264-params \"nal-hrd=cbr\" -b:v 80M -minrate 80M -maxrate 100M -bufsize 500M -c:a copy&lt;/string&gt;
+  &lt;string xsi:nil="true" /&gt;
+  &lt;string&gt;4K h264 80Mbit/s&lt;/string&gt;
+  &lt;string&gt;-c:v libx264 -x264-params \"nal-hrd=vbr\" -b:v 80M -minrate 80M -maxrate 100M -bufsize 500M -c:a pcm_s16le&lt;/string&gt;
+  &lt;string&gt;[%i:v]scale=3840:2160:force_original_aspect_ratio=0[v%i]; &lt;/string&gt;
+  &lt;string&gt;1080 h264 40Mbit/s&lt;/string&gt;
+  &lt;string&gt;-c:v libx264 -x264-params \"nal-hrd=vbr\" -b:v 40M -minrate 30M -maxrate 50M -bufsize 500M -c:a pcm_s16le&lt;/string&gt;
+  &lt;string&gt;[%i:v]scale=1920:1080:force_original_aspect_ratio=0[v%i]; &lt;/string&gt;
 &lt;/ArrayOfString&gt;</Value>
     </Setting>
   </Settings>

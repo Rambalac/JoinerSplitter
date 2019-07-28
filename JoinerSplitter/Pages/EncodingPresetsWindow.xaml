@@ -16,8 +16,9 @@
         </Grid.RowDefinitions>
         <DataGrid x:Uid="DataGrid_1" ItemsSource="{Binding EncoderPresets, Mode=TwoWay}" AutoGenerateColumns="False" >
             <DataGrid.Columns>
-                <DataGridTextColumn x:Uid="DataGridTextColumn_1" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}" MinWidth="100"/>
-                <DataGridTextColumn x:Uid="DataGridTextColumn_2" Binding="{Binding Value}" ClipboardContentBinding="{x:Null}" Width="*"/>
+                <DataGridTextColumn x:Uid="DataGridTextColumn_1" Header="Name" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}" MinWidth="100"/>
+                <DataGridTextColumn x:Uid="DataGridTextColumn_2" Header="Output Encoding" Binding="{Binding OutputEncoding}" ClipboardContentBinding="{x:Null}" Width="*"/>
+                <DataGridTextColumn x:Uid="DataGridTextColumn_2" Header="Complex Video Filter"  Binding="{Binding ComplexFilter}" ClipboardContentBinding="{x:Null}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
 

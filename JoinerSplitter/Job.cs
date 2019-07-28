@@ -53,12 +53,12 @@ namespace JoinerSplitter
                 var folder = OutputFolder ?? Path.GetDirectoryName(Files.First().FilePath) ?? throw new NullReferenceException();
                 if (Files.Select(f => f.GroupIndex).Distinct().Count() == 1)
                 {
-                    return new[] { new FilesGroup(Path.Combine(folder, OutputName), Files, Encoding?.Value) };
+                    return new[] { new FilesGroup(Path.Combine(folder, OutputName), Files, Encoding?.ComplexFilter,  Encoding?.OutputEncoding) };
                 }
 
                 var noext = Path.GetFileNameWithoutExtension(OutputName);
                 var ext = Path.GetExtension(OutputName);
-                return Files.GroupBy(f => f.GroupIndex, (k, f) => new FilesGroup(Path.Combine(folder, $"{noext}_{k}{ext}"), f.ToList(), Encoding?.Value)).ToList();
+                return Files.GroupBy(f => f.GroupIndex, (k, f) => new FilesGroup(Path.Combine(folder, $"{noext}_{k}{ext}"), f.ToList(), Encoding?.ComplexFilter,  Encoding?.OutputEncoding)).ToList();
             }
         }
 

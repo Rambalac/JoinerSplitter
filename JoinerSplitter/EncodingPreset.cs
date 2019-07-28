@@ -12,8 +12,11 @@ namespace JoinerSplitter
         [DataMember]
         public string Name { get; set; }
 
+        [DataMember(Name = "Value")]
+        public string OutputEncoding { get; set; }
+
         [DataMember]
-        public string Value { get; set; }
+        public string ComplexFilter { get; set; }
 
         public string DisplayName
         {

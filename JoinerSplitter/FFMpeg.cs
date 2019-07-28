@@ -255,33 +255,13 @@ namespace JoinerSplitter
 
                 await Task.WhenAll(tasks.ToArray());
 
-                var concatFile = await CreateConcatFile(concatFiles);
-                try
+                if (string.IsNullOrWhiteSpace(step.ComplexFilter))
                 {
-                    var subprogress = new ParallelProgressChild();
-                    progress.Add(subprogress);
-
-                    try
-                    {
-                        await tasksLimit.WaitAsync(cancellation);
-
-                        using (var proc = StartProcess(
-                            FFMpegPath,
-                            str => UpdateProgress(str, subprogress, 0.5),
-                            cancellation,
-                            $"-f concat -safe 0 -i \"{concatFile}\" {outputFormat} -y \"{step.FilePath}\""))
-                        {
-                            await proc;
-                        }
-                    }
-                    finally
-                    {
-                        tasksLimit.Release();
-                    }
+                    await ConcatFilesSimple(step, progress, concatFiles, outputFormat, cancellation);
                 }
-                finally
+                else
                 {
-                    File.Delete(concatFile);
+                    await ConcatFilesComplex(step, progress, concatFiles, cancellation);
                 }
             }
             finally
@@ -290,6 +270,71 @@ namespace JoinerSplitter
                 {
                     File.Delete(file);
                 }
+            }
+        }
+
+        private async Task ConcatFilesComplex(FilesGroup step, ParallelProgressContainer progress, List<string> concatFiles, CancellationToken cancellation)
+        {
+            var subProgress = new ParallelProgressChild();
+            progress.Add(subProgress);
+
+            try
+            {
+                await tasksLimit.WaitAsync(cancellation);
+
+                var inputFiles = string.Join(" ", concatFiles.Select(f => $"-i \"{f}\""));
+
+                var filterParts = string.Join(string.Empty, concatFiles.Select((s, i) => step.ComplexFilter.Replace("%i", i.ToString())));
+                var streamParts = string.Join(string.Empty, concatFiles.Select((s, i) => $"[v{i}][{i}:a]"));
+
+                var filter = $"-filter_complex \"{filterParts}  {streamParts}concat=n={concatFiles.Count}:v=1:a=1[v][a]\" -map \"[v]\" -map \"[a]\"";
+
+                var argument = $"{inputFiles} {filter} {step.OutputEncoding} -y \"{step.FilePath}\"";
+
+                using (var proc = StartProcess(
+                    FFMpegPath,
+                    str => UpdateProgress(str, subProgress, 0.5),
+                    cancellation,
+                    argument))
+                {
+                    await proc;
+                }
+            }
+            finally
+            {
+                tasksLimit.Release();
+            }
+        }
+
+        private async Task ConcatFilesSimple(FilesGroup step, ParallelProgressContainer progress, List<string> concatFiles, string outputFormat, CancellationToken cancellation)
+        {
+            var concatFile = await CreateConcatFile(concatFiles);
+            try
+            {
+                var subProgress = new ParallelProgressChild();
+                progress.Add(subProgress);
+
+                try
+                {
+                    await tasksLimit.WaitAsync(cancellation);
+
+                    using (var proc = StartProcess(
+                        FFMpegPath,
+                        str => UpdateProgress(str, subProgress, 0.5),
+                        cancellation,
+                        $"-f concat -safe 0 -i \"{concatFile}\" {outputFormat} -y \"{step.FilePath}\""))
+                    {
+                        await proc;
+                    }
+                }
+                finally
+                {
+                    tasksLimit.Release();
+                }
+            }
+            finally
+            {
+                File.Delete(concatFile);
             }
         }
 
