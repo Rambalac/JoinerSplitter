@@ -234,4 +234,7 @@
   <data name="ReadingFile" xml:space="preserve">
     <value>ビデオの詳細を読んでいます…</value>
   </data>
+  <data name="NeedOutputFolder" xml:space="preserve">
+    <value>エクスポートのフォルダが必要。</value>
+  </data>
 </root>

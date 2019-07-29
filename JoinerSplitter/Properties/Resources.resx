@@ -231,4 +231,7 @@
   <data name="ReadingFile" xml:space="preserve">
     <value>Retrieving video files details...</value>
   </data>
+  <data name="NeedOutputFolder" xml:space="preserve">
+    <value>Select output folder first.</value>
+  </data>
 </root>

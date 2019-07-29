@@ -582,6 +582,20 @@ namespace JoinerSplitter.Pages
             var job = Data.CurrentJob;
             if (job.OutputFolder == null)
             {
+                if (string.IsNullOrWhiteSpace(Data.OutputFolder))
+                {
+                    using (var dlg = new FolderBrowserDialog())
+                    {
+                        if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                        {
+                            MessageBox.Show(Properties.Resources.NeedOutputFolder, "Folder is required");
+                            return;
+                        }
+
+                        Data.SelectedOutputFolder = dlg.SelectedPath;
+                    }
+                }
+
                 job.OutputFolder = Data.OutputFolder;
             }
 
@@ -632,7 +646,7 @@ namespace JoinerSplitter.Pages
                       {
                           Filter = "JoinerSplitter job file (*.jsj)|*.jsj",
                           DefaultExt = ".jsj",
-                          OverwritePrompt = true
+                          OverwritePrompt = true,
                       };
             if (!string.IsNullOrWhiteSpace(Data.CurrentJob.JobFilePath))
             {

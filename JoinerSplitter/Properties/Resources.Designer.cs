@@ -304,6 +304,15 @@ namespace JoinerSplitter.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Select output folder first..
+        /// </summary>
+        public static string NeedOutputFolder {
+            get {
+                return ResourceManager.GetString("NeedOutputFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Output file name.
         /// </summary>
         public static string OutputFilenameBox {
