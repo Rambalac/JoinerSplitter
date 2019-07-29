@@ -10,13 +10,12 @@ Cuts will be done by closest keyframes, or at lease it will try to do the best.
 
 Requirements
 ------------
-Windows with .NET4.6 installed.
+Windows with .NET4.7.2 installed.
 
 Installation
 ------------
 * Install from `msi`. 
-* Install ffmpeg.exe and ffprobe.exe into JoinerSplitter folder or add to Path.
 
 Current limitations and issues
 ------------------------------
-Application was tested only with Lumix GH3 and Lumix GH4 (including 4K) MOV videos.
+Application was tested only with Lumix GH3, Lumix GH4, Lumix GH5 (including 4K) and Mavic 2 PRO MOV videos.
