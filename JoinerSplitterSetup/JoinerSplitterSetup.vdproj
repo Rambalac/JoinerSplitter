@@ -452,8 +452,8 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:JoinerSplitter"
-        "ProductCode" = "8:{E79EEABD-E524-4BCD-9E27-786511FEC604}"
-        "PackageCode" = "8:{0BEEA60D-09C3-4DC7-8A75-AA36F776F818}"
+        "ProductCode" = "8:{F60A92A7-2C54-47C3-B1A9-F21CB317BFD6}"
+        "PackageCode" = "8:{C50B8D3B-7036-4A09-9F95-F35F27D84F0D}"
         "UpgradeCode" = "8:{22295F9C-F8CC-4D23-B355-5CB10AD0E5E5}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"

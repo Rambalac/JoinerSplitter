@@ -7,6 +7,7 @@ namespace JoinerSplitter
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
@@ -25,9 +26,9 @@ namespace JoinerSplitter
 
         public static FFMpeg Instance { get; set; } = new FFMpeg();
 
-        public string FFMpegPath { get; set; } = "ffmpeg.exe";
+        public string FFMpegPath { get; set; } = "chcp 65001 && ffmpeg.exe";
 
-        public string FFProbePath { get; set; } = "ffprobe.exe";
+        public string FFProbePath { get; set; } = "chcp 65001 && ffprobe.exe";
 
         public async Task DoJob(Job job, Action<double> progressUpdate, CancellationToken cancellation)
         {
@@ -140,9 +141,11 @@ namespace JoinerSplitter
                     RedirectStandardOutput = true,
                     CreateNoWindow = true,
                     UseShellExecute = false,
-                    ErrorDialog = false
+                    ErrorDialog = false,
+                    StandardOutputEncoding = Encoding.UTF8,
+                    StandardErrorEncoding = Encoding.UTF8,
                 },
-                EnableRaisingEvents = true
+                EnableRaisingEvents = true,
             };
 
             var exited = new TaskCompletionSource<ProcessResult>();
