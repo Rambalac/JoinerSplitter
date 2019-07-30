@@ -452,15 +452,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:JoinerSplitter"
-        "ProductCode" = "8:{B2B789EE-88D0-4A7E-93C6-623080AA2BCE}"
-        "PackageCode" = "8:{C46870C3-454F-41B4-8C85-0F28E0CA3063}"
+        "ProductCode" = "8:{D97E2222-D873-4CBF-8EB0-2C27A8005561}"
+        "PackageCode" = "8:{534CABC8-49A7-4169-B260-08DC6C445402}"
         "UpgradeCode" = "8:{22295F9C-F8CC-4D23-B355-5CB10AD0E5E5}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.4.1"
+        "ProductVersion" = "8:1.4.2"
         "Manufacturer" = "8:Rambalac"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://github.com/Rambalac/JoinerSplitter"
@@ -1044,7 +1044,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_CBF56AE87387499B8AEBD4F2CA6E6073"
             {
-            "SourcePath" = "8:..\\JoinerSplitter\\obj\\Release\\JoinerSplitter.exe"
+            "SourcePath" = "8:"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_E1D17CC52B6141AC9A051AF7713D94E1"

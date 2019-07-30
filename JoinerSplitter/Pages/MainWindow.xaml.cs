@@ -580,7 +580,7 @@ namespace JoinerSplitter.Pages
         {
             storyboard?.Pause(MainGrid);
             var job = Data.CurrentJob;
-            if (job.OutputFolder == null)
+            if (string.IsNullOrWhiteSpace(job.OutputFolder))
             {
                 if (string.IsNullOrWhiteSpace(Data.OutputFolder))
                 {
