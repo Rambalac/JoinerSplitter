@@ -4,9 +4,9 @@
 "ProjectType" = "8:{978C614F-708E-4E1A-B201-565925725DBA}"
 "IsWebType" = "8:FALSE"
 "ProjectName" = "8:JoinerSplitterSetup"
-"LanguageId" = "3:0"
-"CodePage" = "3:1252"
-"UILanguageId" = "3:0"
+"LanguageId" = "3:1041"
+"CodePage" = "3:932"
+"UILanguageId" = "3:1041"
 "SccProjectName" = "8:"
 "SccLocalPath" = "8:"
 "SccAuxPath" = "8:"
@@ -445,7 +445,7 @@
         }
         "MsiBootstrapper"
         {
-        "LangId" = "3:0"
+        "LangId" = "3:1041"
         "RequiresElevation" = "11:FALSE"
         }
         "Product"
@@ -453,7 +453,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:JoinerSplitter"
         "ProductCode" = "8:{D97E2222-D873-4CBF-8EB0-2C27A8005561}"
-        "PackageCode" = "8:{534CABC8-49A7-4169-B260-08DC6C445402}"
+        "PackageCode" = "8:{E29B5848-6129-4CD9-9F5F-A04D57FA8C31}"
         "UpgradeCode" = "8:{22295F9C-F8CC-4D23-B355-5CB10AD0E5E5}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -1044,7 +1044,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_CBF56AE87387499B8AEBD4F2CA6E6073"
             {
-            "SourcePath" = "8:"
+            "SourcePath" = "8:..\\JoinerSplitter\\obj\\Release\\JoinerSplitter.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_E1D17CC52B6141AC9A051AF7713D94E1"

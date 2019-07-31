@@ -204,6 +204,7 @@ namespace JoinerSplitter
 
         private static void UpdateProgress(string str, ParallelProgressChild progress, double coef = 1)
         {
+            ThreadState.KeepAwake();
             var m = TimeExtract.Match(str);
             if (m.Success)
             {
