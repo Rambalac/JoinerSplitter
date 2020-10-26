@@ -19,3 +19,10 @@ Installation
 Current limitations and issues
 ------------------------------
 Application was tested only with Lumix GH3, Lumix GH4, Lumix GH5 (including 4K) and Mavic 2 PRO MOV videos.
+
+Some encoder settings
+=====================
+
+### Nvidia NVENC hardware encoding for HDR
+
+`-c:v hevc_nvenc -b:v 90M -profile:v main10 -preset slow -pix_fmt yuv444p16le -color_primaries bt2020 -colorspace bt2020_ncl -color_trc arib-std-b67 -vf eq=gamma=1.5:contrast=1.1:saturation=1.5 -af extrastereo -c:a pcm_s16le`
