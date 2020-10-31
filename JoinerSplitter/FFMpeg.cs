@@ -46,20 +46,10 @@ namespace JoinerSplitter
 
             foreach (var step in groups)
             {
-                var stepDuration = step.Files.Sum(f => f.CutDuration);
                 Task task;
-                if (step.Files.Count > 1)
-                {
-                    var subprogress = new ParallelProgressContainer();
-                    progress.Add(subprogress);
-                    task = ConcatMultipleFiles(step, subprogress, cancellation);
-                }
-                else
-                {
-                    var subprogress = new ParallelProgressChild();
-                    progress.Add(subprogress);
-                    task = CutOneFile(step, subprogress, cancellation);
-                }
+                var subprogress = new ParallelProgressContainer();
+                progress.Add(subprogress);
+                task = ConcatMultipleFiles(step, subprogress, cancellation);
 
                 tasks.Add(task);
             }
@@ -216,103 +206,7 @@ namespace JoinerSplitter
         private async Task ConcatMultipleFiles(FilesGroup step, ParallelProgressContainer progress, CancellationToken cancellation)
         {
             var outputFormat = step.OutputEncoding ?? "-c copy";
-            var concatFiles = new List<string>();
-            var tasks = new List<Task>();
-            var filesToDelete = new List<string>();
-            var doneLock = new object();
-            try
-            {
-                foreach (var file in step.Files)
-                {
-                    cancellation.ThrowIfCancellationRequested();
-                    if (Math.Abs(file.CutDuration - file.Duration) < 0.001)
-                    {
-                        concatFiles.Add(file.FilePath);
-                    }
-                    else
-                    {
-                        var newfile = Path.GetTempFileName() + Path.GetExtension(step.FilePath);
-
-                        var tempargs = $"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} -c copy -y \"{newfile}\"";
-                        Debug.WriteLine(tempargs);
-
-                        var cutprogress = new ParallelProgressChild();
-                        progress.Add(cutprogress);
-
-                        await tasksLimit.WaitAsync(cancellation);
-                        var tempproc = StartProcess(FFMpegPath, str => UpdateProgress(str, cutprogress, 0.5), cancellation, tempargs);
-
-                        var fileCutDuration = file.CutDuration;
-
-                        var task = tempproc.ContinueWith(
-                            t =>
-                            {
-                                t.Result.Dispose();
-                                tasksLimit.Release();
-                            },
-                            cancellation);
-                        filesToDelete.Add(newfile);
-                        concatFiles.Add(newfile);
-                        tasks.Add(task);
-                    }
-                }
-
-                await Task.WhenAll(tasks.ToArray());
-
-                if (string.IsNullOrWhiteSpace(step.ComplexFilter))
-                {
-                    await ConcatFilesSimple(step, progress, concatFiles, outputFormat, cancellation);
-                }
-                else
-                {
-                    await ConcatFilesComplex(step, progress, concatFiles, cancellation);
-                }
-            }
-            finally
-            {
-                foreach (var file in filesToDelete)
-                {
-                    File.Delete(file);
-                }
-            }
-        }
-
-        private async Task ConcatFilesComplex(FilesGroup step, ParallelProgressContainer progress, List<string> concatFiles, CancellationToken cancellation)
-        {
-            var subProgress = new ParallelProgressChild();
-            progress.Add(subProgress);
-
-            try
-            {
-                await tasksLimit.WaitAsync(cancellation);
-
-                var inputFiles = string.Join(" ", concatFiles.Select(f => $"-i \"{f}\""));
-
-                var filterParts = string.Join(string.Empty, concatFiles.Select((s, i) => step.ComplexFilter.Replace("%i", i.ToString())));
-                var streamParts = string.Join(string.Empty, concatFiles.Select((s, i) => $"[v{i}][{i}:a]"));
-
-                var filter = $"-filter_complex \"{filterParts}  {streamParts}concat=n={concatFiles.Count}:v=1:a=1[v][a]\" -map \"[v]\" -map \"[a]\"";
-
-                var argument = $"{inputFiles} {filter} {step.OutputEncoding} -y \"{step.FilePath}\"";
-
-                using (var proc = StartProcess(
-                    FFMpegPath,
-                    str => UpdateProgress(str, subProgress, 0.5),
-                    cancellation,
-                    argument))
-                {
-                    await proc;
-                }
-            }
-            finally
-            {
-                tasksLimit.Release();
-            }
-        }
-
-        private async Task ConcatFilesSimple(FilesGroup step, ParallelProgressContainer progress, List<string> concatFiles, string outputFormat, CancellationToken cancellation)
-        {
-            var concatFile = await CreateConcatFile(concatFiles);
+            var concatFile = await CreateConcatFile(step.Files);
             try
             {
                 var subProgress = new ParallelProgressChild();
@@ -322,11 +216,12 @@ namespace JoinerSplitter
                 {
                     await tasksLimit.WaitAsync(cancellation);
 
+                    string arguments = $"-f concat -safe 0 -i \"{concatFile}\" {outputFormat} -y \"{step.FilePath}\"";
                     using (var proc = StartProcess(
                         FFMpegPath,
-                        str => UpdateProgress(str, subProgress, 0.5),
+                        str => UpdateProgress(str, subProgress),
                         cancellation,
-                        $"-f concat -safe 0 -i \"{concatFile}\" {outputFormat} -y \"{step.FilePath}\""))
+                        arguments))
                     {
                         await proc;
                     }
@@ -342,7 +237,7 @@ namespace JoinerSplitter
             }
         }
 
-        private async Task<string> CreateConcatFile(List<string> concatFiles)
+        private async Task<string> CreateConcatFile(ICollection<VideoFile> concatFiles)
         {
             var result = Path.GetTempFileName() + ".txt";
 
@@ -350,34 +245,13 @@ namespace JoinerSplitter
             {
                 foreach (var file in concatFiles)
                 {
-                    await writer.WriteLineAsync($"file '{file.Replace('\\', '/')}'");
+                    await writer.WriteLineAsync($"file '{file.FilePath.Replace('\\', '/')}'");
+                    await writer.WriteLineAsync($"inpoint {file.Start}");
+                    await writer.WriteLineAsync($"outpoint {file.End}");
                 }
             }
 
             return result;
-        }
-
-        private async Task CutOneFile(FilesGroup step, ParallelProgressChild progress, CancellationToken cancellation)
-        {
-            var outputFormat = step.OutputEncoding ?? "-c copy";
-            var file = step.Files.Single();
-            var filePath = step.FilePath;
-
-            var args = $"-i \"{file.FilePath}\" -ss {file.Start} -t {file.CutDuration} {outputFormat} -y \"{filePath}\"";
-            Debug.WriteLine(args);
-
-            await tasksLimit.WaitAsync(cancellation);
-            try
-            {
-                using (var proc = StartProcess(FFMpegPath, str => UpdateProgress(str, progress), cancellation, args))
-                {
-                    await proc;
-                }
-            }
-            finally
-            {
-                tasksLimit.Release();
-            }
         }
 
         private class ProcessResult : IDisposable
