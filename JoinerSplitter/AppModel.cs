@@ -9,6 +9,7 @@ namespace JoinerSplitter
     using System.Linq;
     using System.Runtime.Serialization.Json;
     using System.Threading.Tasks;
+    using Newtonsoft.Json;
     using Properties;
 
     public class AppModel : INotifyPropertyChanged
@@ -205,27 +206,24 @@ namespace JoinerSplitter
             CurrentJob = await Task.Run(
                              () =>
                              {
-                                 using (var stream = File.OpenRead(path))
-                                 {
-                                     Environment.CurrentDirectory = Path.GetDirectoryName(path) ?? Environment.CurrentDirectory;
-                                     var ser = new DataContractJsonSerializer(typeof(Job));
-                                     var result = (Job)ser.ReadObject(stream);
-                                     result.JobFilePath = path;
-                                     if (result.Encoding != null)
-                                     {
-                                         result.OriginalEncoding = new EncodingPreset
-                                                                   {
-                                                                       Name = result.Encoding.Name,
-                                                                       OutputEncoding = result.Encoding.OutputEncoding,
-                                                                       ComplexFilter = result.Encoding.ComplexFilter,
-                                                                       DisplayName = result.Encoding.Name.Trim() + " (original)"
-                                                                   };
-                                         result.Encoding = result.OriginalEncoding;
-                                         result.Changed = false;
-                                     }
+                                 Environment.CurrentDirectory = Path.GetDirectoryName(path) ?? Environment.CurrentDirectory;
 
-                                     return result;
+                                 var result = JsonConvert.DeserializeObject<Job>(File.ReadAllText(path));
+                                 result.JobFilePath = path;
+                                 if (result.Encoding != null)
+                                 {
+                                     result.OriginalEncoding = new EncodingPreset
+                                     {
+                                         Name = result.Encoding.Name,
+                                         OutputEncoding = result.Encoding.OutputEncoding,
+                                         ComplexFilter = result.Encoding.ComplexFilter,
+                                         DisplayName = $"{result.Encoding.Name.Trim()} (original)",
+                                     };
+                                     result.Encoding = result.OriginalEncoding;
+                                     result.Changed = false;
                                  }
+
+                                 return result;
                              });
             OnPropertyChanged(nameof(ComboBoxEncoderPresets));
         }
@@ -242,11 +240,12 @@ namespace JoinerSplitter
             await Task.Run(
                 () =>
                 {
-                    using (var stream = File.Create(path))
+                    if (CurrentJob == null || !CurrentJob.Files.Any())
                     {
-                        var ser = new DataContractJsonSerializer(typeof(Job));
-                        ser.WriteObject(stream, CurrentJob);
+                        throw new Exception("Wrong job");
                     }
+
+                    File.WriteAllText(path, JsonConvert.SerializeObject(CurrentJob));
 
                     CurrentJob.JobFilePath = path;
                     CurrentJob.Changed = false;
@@ -268,10 +267,10 @@ namespace JoinerSplitter
             }
 
             var newFile = new VideoFile(CurrentFile)
-                          {
-                              Start = splitTime,
-                              GroupIndex = CurrentFile.GroupIndex
-                          };
+            {
+                Start = splitTime,
+                GroupIndex = CurrentFile.GroupIndex
+            };
 
             CurrentFile.End = splitTime;
             CurrentJob.Files.Insert(currentIndex + 1, newFile);

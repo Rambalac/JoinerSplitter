@@ -1,14 +1,33 @@
 ﻿namespace JoinerSplitter
 {
+    using System;
     using System.Collections.Concurrent;
     using System.Linq;
 
-    public class ParallelProgressContainer : ParallelProgress
+    public class ParallelProgressContainer : IParallelProgress
     {
-        private readonly ConcurrentBag<ParallelProgress> children = new ConcurrentBag<ParallelProgress>();
+        private readonly ConcurrentBag<IParallelProgress> children = new ConcurrentBag<IParallelProgress>();
         private double total;
 
-        internal override double Current
+        public bool Done { get; set; }
+
+        public TimeSpan Estimated => Current != 0 ? TimeSpan.FromSeconds((DateTimeOffset.UtcNow - startTime).TotalSeconds * (1 - Current) / Current) : TimeSpan.Zero;
+
+        private readonly DateTimeOffset startTime = DateTimeOffset.UtcNow;
+
+        public ParallelProgressContainer(Action<IParallelProgress> progressUpdate)
+        {
+            Update += (a, b) => progressUpdate(this);
+        }
+
+        public ParallelProgressContainer()
+        {
+            Update += (a, b) => Parent?.OnUpdate();
+        }
+
+        public event EventHandler Update;
+
+        public double Current
         {
             get
             {
@@ -17,21 +36,27 @@
                     return total;
                 }
 
-                var sum = children.Sum(p => p.Current);
                 if (children.All(c => Done))
                 {
-                    total = sum;
+                    total = 1;
                     Done = true;
                 }
 
-                return sum;
+                return children.Average(p => p.Current);
             }
         }
 
-        public void Add(ParallelProgress p)
+        public IParallelProgress Parent { get; set; }
+
+        public void Add(IParallelProgress p)
         {
+            p.Parent = this;
             children.Add(p);
-            p.Root = Root;
+        }
+
+        public void OnUpdate()
+        {
+            Update?.Invoke(this, null);
         }
     }
 }

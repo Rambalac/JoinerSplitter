@@ -1,11 +1,19 @@
+using System;
+
 namespace JoinerSplitter
 {
-    public abstract class ParallelProgress
+    public interface IParallelProgress
     {
-        internal abstract double Current { get; }
+        event EventHandler Update;
 
-        internal bool Done { get; set; }
+        double Current { get; }
 
-        internal ParallelProgressRoot Root { get; set; }
+        bool Done { get; }
+
+        TimeSpan Estimated { get; }
+
+        IParallelProgress Parent { get; set; }
+
+        void OnUpdate();
     }
 }

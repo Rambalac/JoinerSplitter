@@ -9,11 +9,18 @@
     <Border x:Uid="Border_1" Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1">
         <Grid x:Uid="Grid_1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Uid="ColumnDefinition_1" />
-                <ColumnDefinition x:Uid="ColumnDefinition_2" Width="Auto" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ProgressBar x:Uid="Progress" Width="300" x:Name="Progress" Margin="10,10,0,10" />
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <ProgressBar x:Uid="Progress" Width="300" x:Name="Progress" Margin="10,10,0,10" ></ProgressBar>
             <Button x:Uid="CancelButton" x:Name="CancelButton" Content="Cancel" Margin="10" Grid.Column="1" Padding="10,1" Click="CancelButton_Click" />
+            <StackPanel Margin="20,0,10,0" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Horizontal">
+                <TextBlock x:Uid="EstimatedTime" Text="Estimated time: "></TextBlock>
+                <TextBlock x:Name="EstimatedTime" Grid.Row="1"></TextBlock>    
+            </StackPanel>
         </Grid>
     </Border>
 </Window>

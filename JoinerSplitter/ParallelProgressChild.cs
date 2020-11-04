@@ -1,10 +1,16 @@
-﻿namespace JoinerSplitter
+﻿using System;
+using System.Windows;
+
+namespace JoinerSplitter
 {
-    public class ParallelProgressChild : ParallelProgress
+    public class ParallelProgressChild : IParallelProgress
     {
         private double current;
+        private double? duration;
 
-        internal override double Current
+        public event EventHandler Update;
+
+        public double Current
         {
             get
             {
@@ -15,19 +21,45 @@
             }
         }
 
-        public new void Done()
+        public double? Duration
         {
-            base.Done = true;
+            get
+            {
+                lock (this)
+                {
+                    return duration;
+                }
+            }
         }
 
-        public void Update(double newCurrent)
+        public TimeSpan Estimated => throw new NotImplementedException();
+
+        public IParallelProgress Parent { get; set; }
+
+        public bool Done { get; set; }
+
+        public void OnUpdate()
+        {
+            Update?.Invoke(this, null);
+        }
+
+        public void Set(double newCurrent)
         {
             lock (this)
             {
                 current = newCurrent;
             }
 
-            Root.Update();
+            OnUpdate();
+            Parent?.OnUpdate();
+        }
+
+        public void SetDuration(double time)
+        {
+            lock (this)
+            {
+                duration = time;
+            }
         }
     }
 }

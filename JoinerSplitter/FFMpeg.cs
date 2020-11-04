@@ -18,6 +18,9 @@ namespace JoinerSplitter
         private static readonly Regex TimeExtract =
             new Regex(@"\s*frame\s*=\s*(?<frame>\d*)\s*fps\s*=\s*(?<fps>[\d.]*)\s*q\s*=[\d-+.]*\s*(L)?size\s*=\s*(\d*\w{1,5})?\s*time\s*=\s*(?<time>\d{2}:\d{2}:\d{2}\.\d{2}).*");
 
+        private static readonly Regex DurationExtract =
+            new Regex(@"\s*Duration: (?<time>\d{2}:\d{2}:\d{2}\.\d{2}).*");
+
         private static SemaphoreSlim tasksLimit;
 
         private FFMpeg()
@@ -30,7 +33,7 @@ namespace JoinerSplitter
 
         public string FFProbePath { get; set; } = "chcp 65001 && ffprobe.exe";
 
-        public async Task DoJob(Job job, Action<double> progressUpdate, CancellationToken cancellation)
+        public async Task DoJob(Job job, Action<IParallelProgress> progressUpdate, CancellationToken cancellation)
         {
             tasksLimit = new SemaphoreSlim(2);
 
@@ -42,7 +45,7 @@ namespace JoinerSplitter
             }
 
             var tasks = new List<Task>();
-            var progress = new ParallelProgressRoot(progressUpdate);
+            var progress = new ParallelProgressContainer(progressUpdate);
 
             foreach (var step in groups)
             {
@@ -126,7 +129,6 @@ namespace JoinerSplitter
                 {
                     FileName = command,
                     Arguments = string.Join(" ", arguments),
-
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
                     CreateNoWindow = true,
@@ -192,14 +194,25 @@ namespace JoinerSplitter
             return exited.Task;
         }
 
-        private static void UpdateProgress(string str, ParallelProgressChild progress, double coef = 1)
+        private static void UpdateProgress(string str, ParallelProgressChild progress)
         {
             ThreadState.KeepAwake();
+            if (progress.Duration == null)
+            {
+                var dm = DurationExtract.Match(str);
+                if (dm.Success)
+                {
+                    var time = TimeSpan.Parse(dm.Groups["time"].Value, CultureInfo.InvariantCulture).TotalSeconds;
+                    progress.SetDuration(time);
+                }
+                return;
+            }
+
             var m = TimeExtract.Match(str);
             if (m.Success)
             {
                 var time = TimeSpan.Parse(m.Groups["time"].Value, CultureInfo.InvariantCulture).TotalSeconds;
-                progress.Update(time * coef);
+                progress.Set(time/progress.Duration.Value );
             }
         }
 
