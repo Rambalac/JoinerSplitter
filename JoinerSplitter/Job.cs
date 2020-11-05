@@ -41,6 +41,7 @@ namespace JoinerSplitter
             }
         }
 
+        [Newtonsoft.Json.JsonIgnore]
         public ICollection<FilesGroup> FileGroups
         {
             get

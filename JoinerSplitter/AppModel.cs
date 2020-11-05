@@ -5,6 +5,7 @@ namespace JoinerSplitter
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Runtime.Serialization.Json;
@@ -237,19 +238,36 @@ namespace JoinerSplitter
 
         public async Task SaveJob(string path)
         {
-            await Task.Run(
-                () =>
+            try
+            {
+                if (CurrentJob == null || !CurrentJob.Files.Any())
                 {
-                    if (CurrentJob == null || !CurrentJob.Files.Any())
-                    {
-                        throw new Exception("Wrong job");
-                    }
+                    throw new Exception("Wrong job");
+                }
 
-                    File.WriteAllText(path, JsonConvert.SerializeObject(CurrentJob));
+                var tmpPath = path + ".tmp";
+                string contents = JsonConvert.SerializeObject(CurrentJob);
+                File.WriteAllText(tmpPath, contents);
+                var saveFileInfo = new FileInfo(tmpPath);
+                if (saveFileInfo.Length == 0)
+                {
+                    throw new Exception("Wrong job length");
+                }
 
-                    CurrentJob.JobFilePath = path;
-                    CurrentJob.Changed = false;
-                });
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+
+                File.Move(tmpPath, path);
+
+                CurrentJob.JobFilePath = path;
+                CurrentJob.Changed = false;
+            }
+            catch (Exception ex)
+            {
+                Debug.Fail(ex.Message);
+            }
         }
 
         public void SaveSettings()

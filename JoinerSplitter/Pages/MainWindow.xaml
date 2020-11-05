@@ -31,7 +31,7 @@
                 <MenuItem x:Uid="MenuItem_2" Header="{x:Static p:Resources.MenuItem_2}" Click="NewJob" />
                 <MenuItem x:Uid="MenuItem_3" Header="{x:Static p:Resources.MenuItem_3}" Click="OpenJob" />
                 <MenuItem x:Uid="MenuItem_4" Header="{x:Static p:Resources.MenuItem_4}" Click="SaveJob" />
-                <MenuItem x:Uid="MenuItem_5" Header="{x:Static p:Resources.MenuItem_5}" Click="SaveJobAs" />
+                <MenuItem x:Uid="MenuItem_5" Header="{x:Static p:Resources.MenuItem_5}" Click="OnSaveJobAs" />
                 <Separator x:Uid="Separator_1" />
                 <MenuItem x:Uid="MenuItem_6" Header="{x:Static p:Resources.MenuItem_6}" Click="Button_AddVideo" />
                 <MenuItem x:Uid="MenuItem_7" Header="{x:Static p:Resources.MenuItem_7}" Click="Button_Duplicate" />

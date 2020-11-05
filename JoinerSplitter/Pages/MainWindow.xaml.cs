@@ -479,7 +479,7 @@ namespace JoinerSplitter.Pages
             {
                 Filter = "JoinerSplitter job file (*.jsj)|*.jsj",
                 DefaultExt = ".jsj",
-                Multiselect = false
+                Multiselect = false,
             };
 
             var result = dlg.ShowDialog();
@@ -646,7 +646,7 @@ namespace JoinerSplitter.Pages
         {
             if (string.IsNullOrWhiteSpace(Data.CurrentJob.JobFilePath))
             {
-                SaveJobAs();
+                await SaveJobAs();
             }
             else
             {
@@ -654,7 +654,12 @@ namespace JoinerSplitter.Pages
             }
         }
 
-        private async void SaveJobAs(object sender = null, RoutedEventArgs e = null)
+        private async void OnSaveJobAs(object sender = null, RoutedEventArgs e = null)
+        {
+            await SaveJobAs();
+        }
+
+        private async Task SaveJobAs()
         {
             var dlg = new SaveFileDialog
             {
