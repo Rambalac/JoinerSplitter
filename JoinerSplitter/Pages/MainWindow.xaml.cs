@@ -599,7 +599,7 @@ namespace JoinerSplitter.Pages
                 job.OutputFolder = Data.OutputFolder;
             }
 
-            var progress = ProgressWindow.Show(this, job.Files.Sum(f => f.CutDuration));
+            var progress = ProgressWindow.Show(this);
             try
             {
                 await FFMpeg.Instance.DoJob(
@@ -608,7 +608,7 @@ namespace JoinerSplitter.Pages
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            progress.Progress.Value = cur.Current;
+                            progress.Progress.Value = cur.Current * 100;
                             if (cur.Estimated.TotalHours >= 1)
                             {
                                 progress.EstimatedTime.Text = $"{Math.Floor(cur.Estimated.TotalHours)}:{cur.Estimated.Minutes:00}:{cur.Estimated.Seconds:00}";
